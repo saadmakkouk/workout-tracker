@@ -1,80 +1,99 @@
 import { useState } from 'react'
 
+const DAY_LABELS = {
+  day1: 'Upper — Strength', day2: 'Lower — Strength',
+  day3: 'Upper — Volume', day4: 'Lower — Athletic', freestyle: 'Freestyle',
+}
+const PHASE_COLORS = { accumulation: '#4ade80', intensification: '#e8ff00', deload: '#60a5fa', freestyle: '#7c3aed' }
+
 export default function HistoryScreen({ sessions, allLogs, onBack }) {
   const [expanded, setExpanded] = useState(null)
+  const [filterDay, setFilterDay] = useState('all')
 
-  const dayLabels = {
-    upper_heavy: "Upper — Strength",
-    lower_heavy: "Lower — Strength",
-    upper_hypertrophy: "Upper — Volume",
-    athletic: "Athletic & Power"
-  }
+  const filtered = filterDay === 'all' ? sessions : sessions.filter(s => s.day_type === filterDay)
 
   return (
     <div style={s.root}>
       <div style={s.topBar}>
         <button style={s.backBtn} onClick={onBack}>← Back</button>
-        <span style={s.title}>SESSION HISTORY</span>
+        <span style={s.title}>HISTORY</span>
         <span style={s.count}>{sessions.length} sessions</span>
       </div>
 
+      <div style={s.filter}>
+        {['all', 'day1', 'day2', 'day3', 'day4', 'freestyle'].map(d => (
+          <button
+            key={d}
+            style={{ ...s.filterBtn, ...(filterDay === d ? s.filterBtnActive : {}) }}
+            onClick={() => setFilterDay(d)}
+          >
+            {d === 'all' ? 'All' : d === 'freestyle' ? 'Free' : d.replace('day', 'D')}
+          </button>
+        ))}
+      </div>
+
       <div style={s.list}>
-        {sessions.length === 0 && (
-          <div style={s.empty}>No sessions yet. Hit your first one! 💪</div>
+        {filtered.length === 0 && (
+          <div style={s.empty}>No sessions yet. Time to lift. 💪</div>
         )}
-        {sessions.map((session, i) => {
+        {filtered.map((session, i) => {
           const logs = allLogs.filter(l => l.session_id === session.id)
           const isOpen = expanded === session.id
+          const phaseColor = PHASE_COLORS[session.phase] || '#e8ff00'
+          const totalVolume = logs.reduce((acc, log) => {
+            try {
+              const sets = typeof log.sets === 'string' ? JSON.parse(log.sets) : log.sets || []
+              return acc + sets.reduce((a, s) => a + (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0), 0)
+            } catch { return acc }
+          }, 0)
 
           return (
-            <div key={session.id} style={s.sessionCard}>
-              <button style={s.sessionHeader} onClick={() => setExpanded(isOpen ? null : session.id)}>
-                <div style={s.sessionLeft}>
-                  <div style={s.sessionNum}>#{sessions.length - i}</div>
+            <div key={session.id} style={s.card}>
+              <button style={s.cardHeader} onClick={() => setExpanded(isOpen ? null : session.id)}>
+                <div style={s.cardLeft}>
+                  <div style={s.sessionNum}>#{sessions.length - sessions.indexOf(session)}</div>
                   <div>
-                    <div style={s.sessionDay}>{dayLabels[session.day_type] || session.day_type}</div>
-                    <div style={s.sessionDate}>
-                      {new Date(session.date).toLocaleDateString('en-GB', {
-                        weekday: 'long', day: 'numeric', month: 'long'
-                      })}
+                    <div style={s.sessionDay}>{DAY_LABELS[session.day_type] || session.day_type}</div>
+                    <div style={s.sessionDate}>{new Date(session.date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+                    <div style={s.sessionMeta}>
+                      {session.phase && <span style={{ ...s.metaTag, color: phaseColor }}>{session.phase}</span>}
+                      {totalVolume > 0 && <span style={s.metaTag}>{Math.round(totalVolume)}kg total</span>}
+                      <span style={{ ...s.metaTag, color: getFatigueColor(session.fatigue_level) }}>
+                        Fatigue {session.fatigue_level}/5
+                      </span>
                     </div>
                   </div>
                 </div>
-                <div style={s.sessionRight}>
-                  <span style={{ ...s.fatiguePill, background: getFatigueColor(session.fatigue_level) + '22', color: getFatigueColor(session.fatigue_level) }}>
-                    Fatigue {session.fatigue_level}/5
-                  </span>
-                  <span style={s.chevron}>{isOpen ? '▲' : '▼'}</span>
-                </div>
+                <span style={s.chevron}>{isOpen ? '▲' : '▼'}</span>
               </button>
 
               {isOpen && (
-                <div style={s.sessionBody}>
-                  {session.notes && (
-                    <div style={s.notes}>{session.notes}</div>
-                  )}
+                <div style={s.cardBody}>
+                  {session.notes && <div style={s.sessionNotes}>"{session.notes}"</div>}
                   {logs.map(log => {
                     let sets = []
                     try { sets = typeof log.sets === 'string' ? JSON.parse(log.sets) : log.sets || [] } catch {}
                     const maxWeight = Math.max(...sets.map(s => parseFloat(s.weight) || 0))
                     const totalReps = sets.reduce((a, s) => a + (parseInt(s.reps) || 0), 0)
+                    const avgRIR = sets.filter(s => s.rir !== '' && s.rir !== undefined).length > 0
+                      ? (sets.reduce((a, s) => a + (parseInt(s.rir) || 0), 0) / sets.filter(s => s.rir !== '').length).toFixed(1)
+                      : null
 
                     return (
                       <div key={log.id} style={s.logRow}>
                         <div style={s.logHeader}>
                           <span style={s.logName}>{log.exercise_name}</span>
-                          {log.felt && <span style={s.feltTag}>{feltEmoji[log.felt]} {log.felt}</span>}
+                          {avgRIR !== null && <span style={s.logRIR}>RIR {avgRIR}</span>}
                         </div>
                         <div style={s.logSets}>
                           {sets.map((set, si) => (
-                            <span key={si} style={s.setChip}>
-                              {set.weight}kg × {set.reps}
-                            </span>
+                            <span key={si} style={s.setChip}>{set.weight}kg × {set.reps}</span>
                           ))}
                         </div>
                         <div style={s.logStats}>
-                          <span style={s.logStat}>Max: {maxWeight}kg</span>
-                          <span style={s.logStat}>Total reps: {totalReps}</span>
+                          <span style={s.logStat}>Top: {maxWeight}kg</span>
+                          <span style={s.logStat}>Reps: {totalReps}</span>
+                          <span style={s.logStat}>Vol: {Math.round(sets.reduce((a,s) => a + (parseFloat(s.weight)||0)*(parseInt(s.reps)||0), 0))}kg</span>
                         </div>
                       </div>
                     )
@@ -89,47 +108,40 @@ export default function HistoryScreen({ sessions, allLogs, onBack }) {
   )
 }
 
-const feltEmoji = { easy: '😌', good: '💪', hard: '😤', failed: '❌' }
-
 function getFatigueColor(level) {
-  if (!level) return '#333'
-  if (level <= 2) return '#4ade80'
+  if (!level || level <= 2) return '#4ade80'
   if (level <= 3) return '#facc15'
   return '#f87171'
 }
 
 const s = {
   root: { minHeight: '100vh', background: '#0a0a0a', paddingBottom: 40 },
-  topBar: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '16px 20px', borderBottom: '1px solid #1a1a1a',
-  },
-  backBtn: { background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontFamily: "'DM Mono', monospace", fontSize: 13 },
-  title: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: '#f0ede8', letterSpacing: 3 },
-  count: { fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#555' },
-  list: { padding: '16px 16px' },
-  empty: { textAlign: 'center', color: '#444', fontFamily: "'DM Mono', monospace", fontSize: 13, marginTop: 60 },
-  sessionCard: { background: '#111', border: '1px solid #1a1a1a', borderRadius: 12, marginBottom: 12, overflow: 'hidden' },
-  sessionHeader: {
-    width: '100%', background: 'none', border: 'none',
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    padding: '16px', cursor: 'pointer', textAlign: 'left',
-  },
-  sessionLeft: { display: 'flex', gap: 12, alignItems: 'center' },
-  sessionNum: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 24, color: '#333', letterSpacing: 1 },
+  topBar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #161616' },
+  backBtn: { background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontFamily: "'DM Mono', monospace", fontSize: 13 },
+  title: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: '#f0ede8', letterSpacing: 4 },
+  count: { fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#444' },
+  filter: { display: 'flex', gap: 6, padding: '12px 16px', overflowX: 'auto', borderBottom: '1px solid #161616' },
+  filterBtn: { background: '#111', border: '1px solid #1a1a1a', borderRadius: 20, padding: '6px 14px', color: '#555', cursor: 'pointer', fontFamily: "'DM Mono', monospace", fontSize: 11, flexShrink: 0 },
+  filterBtnActive: { background: '#141400', border: '1px solid #e8ff00', color: '#e8ff00' },
+  list: { padding: '12px 14px' },
+  empty: { textAlign: 'center', color: '#333', fontFamily: "'DM Mono', monospace", fontSize: 12, marginTop: 60 },
+  card: { background: '#111', border: '1px solid #1a1a1a', borderRadius: 12, marginBottom: 10, overflow: 'hidden' },
+  cardHeader: { width: '100%', background: 'none', border: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', cursor: 'pointer', textAlign: 'left' },
+  cardLeft: { display: 'flex', gap: 12, alignItems: 'flex-start' },
+  sessionNum: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: '#2a2a2a', letterSpacing: 1, paddingTop: 2 },
   sessionDay: { fontSize: 14, color: '#f0ede8', fontWeight: 500, marginBottom: 2 },
-  sessionDate: { fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#555' },
-  sessionRight: { display: 'flex', alignItems: 'center', gap: 8 },
-  fatiguePill: { fontFamily: "'DM Mono', monospace", fontSize: 10, padding: '3px 8px', borderRadius: 20 },
-  chevron: { color: '#444', fontSize: 11 },
-  sessionBody: { padding: '0 16px 16px', borderTop: '1px solid #1a1a1a' },
-  notes: { fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: '#888', padding: '12px 0', borderBottom: '1px solid #151515', fontStyle: 'italic' },
-  logRow: { padding: '12px 0', borderBottom: '1px solid #151515' },
+  sessionDate: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#444', marginBottom: 6 },
+  sessionMeta: { display: 'flex', gap: 6, flexWrap: 'wrap' },
+  metaTag: { fontFamily: "'DM Mono', monospace", fontSize: 9, color: '#555', background: '#0a0a0a', border: '1px solid #161616', borderRadius: 20, padding: '2px 7px', textTransform: 'capitalize' },
+  chevron: { color: '#333', fontSize: 11 },
+  cardBody: { padding: '0 16px 16px', borderTop: '1px solid #161616' },
+  sessionNotes: { fontSize: 12, color: '#555', fontStyle: 'italic', padding: '10px 0', borderBottom: '1px solid #161616', marginBottom: 4 },
+  logRow: { padding: '10px 0', borderBottom: '1px solid #111' },
   logHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  logName: { fontSize: 14, color: '#f0ede8', fontWeight: 500 },
-  feltTag: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#666' },
-  logSets: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 },
-  setChip: { fontFamily: "'DM Mono', monospace", fontSize: 11, background: '#0a0a0a', border: '1px solid #1a1a1a', borderRadius: 20, padding: '3px 8px', color: '#888' },
-  logStats: { display: 'flex', gap: 16 },
-  logStat: { fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#e8ff00' },
+  logName: { fontSize: 13, color: '#f0ede8', fontWeight: 500 },
+  logRIR: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#e8ff00' },
+  logSets: { display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 5 },
+  setChip: { fontFamily: "'DM Mono', monospace", fontSize: 10, background: '#0a0a0a', border: '1px solid #161616', borderRadius: 20, padding: '3px 8px', color: '#666' },
+  logStats: { display: 'flex', gap: 14 },
+  logStat: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#e8ff00' },
 }

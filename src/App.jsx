@@ -1,125 +1,113 @@
 import { useState, useEffect } from 'react'
 import { supabase } from './lib/supabase.js'
+import HomeScreen from './components/HomeScreen.jsx'
 import SetupScreen from './components/SetupScreen.jsx'
 import WorkoutScreen from './components/WorkoutScreen.jsx'
+import FreestyleScreen from './components/FreestyleScreen.jsx'
 import HistoryScreen from './components/HistoryScreen.jsx'
-import HomeScreen from './components/HomeScreen.jsx'
-import { generateWorkout, analyzeFatigue } from './lib/workout.js'
+import { analyzeFatigue } from './lib/programming.js'
 
 export default function App() {
-  const [screen, setScreen] = useState('home') // home | setup | workout | history
+  const [screen, setScreen] = useState('home')
   const [sessions, setSessions] = useState([])
   const [allLogs, setAllLogs] = useState([])
   const [currentWorkout, setCurrentWorkout] = useState(null)
   const [selectedEquipment, setSelectedEquipment] = useState([])
   const [loading, setLoading] = useState(true)
-  const [fatigueAlert, setFatigueAlert] = useState(null)
+  const [fatigue, setFatigue] = useState({ fatigued: false, deloadRecommended: false, message: null })
 
-  useEffect(() => {
-    loadData()
-  }, [])
+  useEffect(() => { loadData() }, [])
 
   async function loadData() {
     setLoading(true)
     try {
-      const { data: sessionData } = await supabase
-        .from('sessions')
-        .select('*')
-        .order('date', { ascending: false })
-        .limit(20)
-
-      const { data: logData } = await supabase
-        .from('logs')
-        .select('*')
-        .order('id', { ascending: false })
-        .limit(200)
-
+      const [{ data: sessionData }, { data: logData }] = await Promise.all([
+        supabase.from('sessions').select('*').order('date', { ascending: false }).limit(50),
+        supabase.from('logs').select('*').order('id', { ascending: false }).limit(500),
+      ])
       setSessions(sessionData || [])
       setAllLogs(logData || [])
-
-      const fatigue = analyzeFatigue(sessionData || [])
-      setFatigueAlert(fatigue.fatigued ? fatigue.message : null)
+      setFatigue(analyzeFatigue(sessionData || []))
     } catch (err) {
       console.error('Load error:', err)
     }
     setLoading(false)
   }
 
-  function handleStartSetup(equipment) {
-    setSelectedEquipment(equipment)
-    const sessionNum = sessions.length
-    const workout = generateWorkout(sessionNum, equipment, allLogs)
-    setCurrentWorkout(workout)
-    setScreen('workout')
-  }
-
-  async function handleFinishWorkout(loggedExercises, fatigueLevel, notes) {
+  async function saveSession(workout, exercises, fatigueLevel, sessionNotes) {
     try {
-      // Save session
-      const { data: sessionData, error: sessionError } = await supabase
+      const { data: sessionData, error } = await supabase
         .from('sessions')
         .insert({
-          day_type: currentWorkout.splitKey,
+          day_type: workout.dayType,
           equipment: selectedEquipment,
           fatigue_level: fatigueLevel,
-          notes: notes || null,
+          notes: sessionNotes || null,
+          phase: workout.phase,
+          block_key: workout.blockKey,
+          session_number: workout.sessionCount,
         })
-        .select()
-        .single()
+        .select().single()
 
-      if (sessionError) throw sessionError
+      if (error) throw error
 
-      // Save logs
-      const logsToInsert = loggedExercises.map(ex => ({
-        session_id: sessionData.id,
-        exercise_name: ex.name,
-        sets: JSON.stringify(ex.loggedSets),
-        target_weight: ex.targetWeight,
-        target_reps: ex.repRange,
-        felt: ex.felt,
-      }))
+      const logsToInsert = exercises
+        .filter(ex => ex.sets.some(s => s.weight && s.reps))
+        .map(ex => ({
+          session_id: sessionData.id,
+          exercise_name: ex.name,
+          exercise_id: ex.exerciseId,
+          sets: JSON.stringify(ex.sets),
+          target_reps: ex.repRange,
+          target_rir: ex.targetRIR,
+          felt: ex.felt,
+        }))
 
-      await supabase.from('logs').insert(logsToInsert)
+      if (logsToInsert.length > 0) {
+        await supabase.from('logs').insert(logsToInsert)
+      }
 
       await loadData()
       setScreen('home')
       setCurrentWorkout(null)
     } catch (err) {
       console.error('Save error:', err)
-      alert('Error saving workout. Check your connection.')
+      alert('Error saving session. Check your connection and try again.')
     }
-  }
-
-  function handleSwapAndContinue(updatedWorkout) {
-    setCurrentWorkout(updatedWorkout)
   }
 
   if (loading) {
     return (
-      <div style={styles.loader}>
-        <div style={styles.loaderText}>LIFT</div>
-        <div style={styles.loaderSub}>Loading your data...</div>
+      <div style={s.loader}>
+        <div style={s.loaderLogo}>LIFT</div>
+        <div style={s.loaderSub}>Loading...</div>
       </div>
     )
   }
 
   return (
-    <div style={styles.root}>
+    <div style={s.root}>
       {screen === 'home' && (
         <HomeScreen
           sessions={sessions}
           allLogs={allLogs}
-          fatigueAlert={fatigueAlert}
-          onStartWorkout={() => setScreen('setup')}
-          onViewHistory={() => setScreen('history')}
+          fatigue={fatigue}
           sessionCount={sessions.length}
+          onStartSetup={() => setScreen('setup')}
+          onFreestyle={() => setScreen('freestyle')}
+          onHistory={() => setScreen('history')}
         />
       )}
       {screen === 'setup' && (
         <SetupScreen
-          onStart={handleStartSetup}
-          onBack={() => setScreen('home')}
           sessionCount={sessions.length}
+          allLogs={allLogs}
+          onStart={(equipment, workout) => {
+            setSelectedEquipment(equipment)
+            setCurrentWorkout(workout)
+            setScreen('workout')
+          }}
+          onBack={() => setScreen('home')}
         />
       )}
       {screen === 'workout' && currentWorkout && (
@@ -127,9 +115,19 @@ export default function App() {
           workout={currentWorkout}
           availableEquipment={selectedEquipment}
           allLogs={allLogs}
-          onFinish={handleFinishWorkout}
+          onFinish={(exercises, fatigueLevel, notes) => saveSession(currentWorkout, exercises, fatigueLevel, notes)}
           onBack={() => setScreen('home')}
-          onSwap={handleSwapAndContinue}
+          onUpdateWorkout={setCurrentWorkout}
+        />
+      )}
+      {screen === 'freestyle' && (
+        <FreestyleScreen
+          availableEquipment={selectedEquipment}
+          onFinish={async (exercises, fatigueLevel, notes) => {
+            const fakeWorkout = { dayType: 'freestyle', phase: 'freestyle', blockKey: 'freestyle', sessionCount: sessions.length }
+            await saveSession(fakeWorkout, exercises, fatigueLevel, notes)
+          }}
+          onBack={() => setScreen('home')}
         />
       )}
       {screen === 'history' && (
@@ -143,36 +141,9 @@ export default function App() {
   )
 }
 
-const styles = {
-  root: {
-    minHeight: '100vh',
-    background: '#0a0a0a',
-    color: '#f0ede8',
-    fontFamily: "'DM Sans', sans-serif",
-    maxWidth: 480,
-    margin: '0 auto',
-    position: 'relative',
-    overflowX: 'hidden',
-  },
-  loader: {
-    minHeight: '100vh',
-    background: '#0a0a0a',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  loaderText: {
-    fontFamily: "'Bebas Neue', sans-serif",
-    fontSize: 64,
-    color: '#e8ff00',
-    letterSpacing: 8,
-  },
-  loaderSub: {
-    fontFamily: "'DM Mono', monospace",
-    fontSize: 12,
-    color: '#555',
-    letterSpacing: 2,
-  }
+const s = {
+  root: { minHeight: '100vh', background: '#0a0a0a', color: '#f0ede8', fontFamily: "'DM Sans', sans-serif", maxWidth: 480, margin: '0 auto' },
+  loader: { minHeight: '100vh', background: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 },
+  loaderLogo: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 72, color: '#e8ff00', letterSpacing: 10 },
+  loaderSub: { fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#444', letterSpacing: 3 },
 }

@@ -1,115 +1,121 @@
-const PROTEIN_TARGET = 190
+import { getProgressStats, getWeeklyVolume, getCurrentPhase, getCurrentBlock, getDayType } from '../lib/programming.js'
+import { PROGRAMME, BLOCK_ROTATIONS, EXERCISES } from '../data/exercises.js'
 
-export default function HomeScreen({ sessions, allLogs, fatigueAlert, onStartWorkout, onViewHistory, sessionCount }) {
+export default function HomeScreen({ sessions, allLogs, fatigue, sessionCount, onStartSetup, onFreestyle, onHistory }) {
+  const { prMap } = getProgressStats(allLogs)
+  const weeklyVolume = getWeeklyVolume(sessions, allLogs)
   const lastSession = sessions[0]
-  const daysSinceLastSession = lastSession
-    ? Math.floor((new Date() - new Date(lastSession.date)) / (1000 * 60 * 60 * 24))
-    : null
+  const daysSinceLast = lastSession ? Math.floor((new Date() - new Date(lastSession.date)) / 86400000) : null
 
-  const nextSplitLabels = ["Upper — Strength", "Lower — Strength", "Upper — Volume", "Athletic & Power"]
-  const nextSplit = nextSplitLabels[sessionCount % 4]
+  const phase = getCurrentPhase(sessionCount)
+  const blockKey = getCurrentBlock(sessionCount)
+  const dayType = getDayType(sessionCount)
+  const nextDay = PROGRAMME[dayType]
 
-  // Recent PR detection — find max weight per exercise
-  const prMap = {}
-  allLogs.forEach(log => {
-    try {
-      const sets = typeof log.sets === 'string' ? JSON.parse(log.sets) : log.sets
-      if (!sets) return
-      const maxW = Math.max(...sets.map(s => parseFloat(s.weight) || 0))
-      if (!prMap[log.exercise_name] || maxW > prMap[log.exercise_name]) {
-        prMap[log.exercise_name] = maxW
-      }
-    } catch {}
-  })
+  const blockNum = blockKey === 'block1' ? 1 : 2
+  const weekInBlock = phase.week
 
-  const totalSessions = sessions.length
-  const totalVolume = allLogs.reduce((acc, log) => {
-    try {
-      const sets = typeof log.sets === 'string' ? JSON.parse(log.sets) : log.sets
-      if (!sets) return acc
-      return acc + sets.reduce((a, s) => a + (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0), 0)
-    } catch { return acc }
-  }, 0)
+  const primaryLifts = [
+    { id: 'flat_barbell_bench', label: 'Bench' },
+    { id: 'conventional_deadlift', label: 'Deadlift' },
+    { id: 'back_squat', label: 'Squat' },
+    { id: 'barbell_ohp', label: 'OHP' },
+    { id: 'barbell_row', label: 'Row' },
+  ]
 
   return (
     <div style={s.root}>
-      {/* Header */}
       <div style={s.header}>
         <div style={s.logoRow}>
           <span style={s.logo}>LIFT</span>
-          <span style={s.tagline}>Personal Strength OS</span>
+          <div style={s.blockInfo}>
+            <span style={s.blockBadge}>Block {blockNum}</span>
+            <span style={s.phaseBadge}>{phase.label}</span>
+            <span style={s.weekBadge}>Wk {weekInBlock}</span>
+          </div>
         </div>
-        <div style={s.proteinBanner}>
-          <span style={s.proteinIcon}>🥩</span>
-          <span style={s.proteinText}>Today's protein target: <strong>{PROTEIN_TARGET}g</strong></span>
-        </div>
+
+        {fatigue.deloadRecommended && (
+          <div style={s.deloadAlert}>
+            <span>⚠️</span>
+            <span style={s.alertText}>{fatigue.message}</span>
+          </div>
+        )}
+        {fatigue.fatigued && !fatigue.deloadRecommended && (
+          <div style={s.fatigueAlert}>
+            <span>💛</span>
+            <span style={s.alertText}>{fatigue.message}</span>
+          </div>
+        )}
       </div>
 
-      {/* Fatigue Alert */}
-      {fatigueAlert && (
-        <div style={s.fatigueCard}>
-          <span style={s.fatigueIcon}>⚠️</span>
-          <span style={s.fatigueText}>{fatigueAlert}</span>
+      <div style={s.nextCard}>
+        <div style={s.nextMeta}>NEXT SESSION</div>
+        <div style={s.nextTitle}>{nextDay?.label}</div>
+        <div style={s.nextFocus}>{nextDay?.focus}</div>
+        {daysSinceLast !== null && (
+          <div style={s.lastTrained}>
+            Last trained {daysSinceLast === 0 ? 'today' : daysSinceLast === 1 ? 'yesterday' : `${daysSinceLast} days ago`}
+          </div>
+        )}
+        {!lastSession && <div style={s.lastTrained}>First session — time to build 🔥</div>}
+        <button style={s.startBtn} onClick={onStartSetup}>START SESSION</button>
+        <button style={s.freestyleBtn} onClick={onFreestyle}>Freestyle Session</button>
+      </div>
+
+      <div style={s.statsRow}>
+        {[
+          { val: sessionCount, label: 'Sessions' },
+          { val: weeklyVolume > 0 ? `${Math.round(weeklyVolume / 1000)}k` : '—', label: 'kg This Week' },
+          { val: Object.keys(prMap).length, label: 'Lifts Tracked' },
+        ].map(st => (
+          <div key={st.label} style={s.statBox}>
+            <span style={s.statVal}>{st.val}</span>
+            <span style={s.statLabel}>{st.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {Object.keys(prMap).length > 0 && (
+        <div style={s.section}>
+          <div style={s.sectionHeader}>
+            <span style={s.sectionTitle}>TOP LIFTS</span>
+            <button style={s.historyBtn} onClick={onHistory}>History →</button>
+          </div>
+          {primaryLifts.map(lift => {
+            const ex = EXERCISES[lift.id]
+            const pr = prMap[ex?.name]
+            if (!pr) return null
+            return (
+              <div key={lift.id} style={s.prRow}>
+                <span style={s.prName}>{lift.label}</span>
+                <span style={s.prWeight}>{pr} kg</span>
+              </div>
+            )
+          })}
         </div>
       )}
 
-      {/* Next Session Card */}
-      <div style={s.nextCard}>
-        <div style={s.nextLabel}>NEXT SESSION</div>
-        <div style={s.nextSplit}>{nextSplit}</div>
-        {daysSinceLastSession !== null && (
-          <div style={s.lastSession}>
-            Last trained {daysSinceLastSession === 0 ? 'today' : daysSinceLastSession === 1 ? 'yesterday' : `${daysSinceLastSession} days ago`}
-          </div>
-        )}
-        {!lastSession && (
-          <div style={s.lastSession}>First session — let's go 🔥</div>
-        )}
-        <button style={s.startBtn} onClick={onStartWorkout}>
-          START SESSION
-        </button>
-      </div>
-
-      {/* Stats Row */}
-      <div style={s.statsRow}>
-        <div style={s.statBox}>
-          <span style={s.statVal}>{totalSessions}</span>
-          <span style={s.statLabel}>Sessions</span>
-        </div>
-        <div style={s.statBox}>
-          <span style={s.statVal}>{totalVolume > 0 ? Math.round(totalVolume / 1000) + 'k' : '—'}</span>
-          <span style={s.statLabel}>kg Lifted</span>
-        </div>
-        <div style={s.statBox}>
-          <span style={s.statVal}>{Object.keys(prMap).length}</span>
-          <span style={s.statLabel}>Exercises</span>
-        </div>
-      </div>
-
-      {/* Recent Sessions */}
       {sessions.length > 0 && (
         <div style={s.section}>
           <div style={s.sectionHeader}>
-            <span style={s.sectionTitle}>RECENT SESSIONS</span>
-            <button style={s.historyBtn} onClick={onViewHistory}>View All →</button>
+            <span style={s.sectionTitle}>RECENT</span>
           </div>
-          {sessions.slice(0, 3).map((session, i) => {
-            const sessionLogs = allLogs.filter(l => l.session_id === session.id)
+          {sessions.slice(0, 3).map(session => {
+            const logs = allLogs.filter(l => l.session_id === session.id)
             const dayLabels = {
-              upper_heavy: "Upper — Strength",
-              lower_heavy: "Lower — Strength",
-              upper_hypertrophy: "Upper — Volume",
-              athletic: "Athletic & Power"
+              day1: 'Upper — Strength', day2: 'Lower — Strength',
+              day3: 'Upper — Volume', day4: 'Lower — Athletic', freestyle: 'Freestyle',
             }
             return (
               <div key={session.id} style={s.sessionRow}>
-                <div style={s.sessionLeft}>
+                <div>
                   <div style={s.sessionDay}>{dayLabels[session.day_type] || session.day_type}</div>
                   <div style={s.sessionDate}>{new Date(session.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
                 </div>
                 <div style={s.sessionRight}>
-                  <span style={s.sessionExCount}>{sessionLogs.length} exercises</span>
-                  <span style={{ ...s.fatigueDot, background: getFatigueColor(session.fatigue_level) }} />
+                  <span style={s.sessionCount}>{logs.length} exercises</span>
+                  <div style={{ ...s.fatigueDot, background: getFatigueColor(session.fatigue_level) }} />
                 </div>
               </div>
             )
@@ -117,99 +123,52 @@ export default function HomeScreen({ sessions, allLogs, fatigueAlert, onStartWor
         </div>
       )}
 
-      {/* Personal Records */}
-      {Object.keys(prMap).length > 0 && (
-        <div style={s.section}>
-          <div style={s.sectionHeader}>
-            <span style={s.sectionTitle}>TOP LIFTS</span>
-          </div>
-          {Object.entries(prMap)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5)
-            .map(([name, weight]) => (
-              <div key={name} style={s.prRow}>
-                <span style={s.prName}>{name}</span>
-                <span style={s.prWeight}>{weight} kg</span>
-              </div>
-            ))}
-        </div>
-      )}
-
-      <div style={s.footer}>Built for Saad · LIFT v1.0</div>
+      <div style={s.footer}>LIFT · Built for Saad</div>
     </div>
   )
 }
 
 function getFatigueColor(level) {
-  if (!level) return '#333'
-  if (level <= 2) return '#4ade80'
+  if (!level || level <= 2) return '#4ade80'
   if (level <= 3) return '#facc15'
   return '#f87171'
 }
 
 const s = {
   root: { minHeight: '100vh', background: '#0a0a0a', paddingBottom: 40 },
-  header: { padding: '48px 20px 24px', borderBottom: '1px solid #1a1a1a' },
-  logoRow: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 16 },
-  logo: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, color: '#e8ff00', letterSpacing: 6, lineHeight: 1 },
-  tagline: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#444', letterSpacing: 2, textTransform: 'uppercase' },
-  proteinBanner: {
-    display: 'flex', alignItems: 'center', gap: 8,
-    background: '#141414', border: '1px solid #1f1f1f',
-    borderRadius: 8, padding: '10px 14px',
-  },
-  proteinIcon: { fontSize: 16 },
-  proteinText: { fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#888' },
-  fatigueCard: {
-    margin: '16px 20px 0',
-    background: '#1a0f00', border: '1px solid #f97316',
-    borderRadius: 10, padding: '12px 16px',
-    display: 'flex', gap: 10, alignItems: 'flex-start',
-  },
-  fatigueIcon: { fontSize: 16, flexShrink: 0 },
-  fatigueText: { fontSize: 13, color: '#f97316', lineHeight: 1.5 },
-  nextCard: {
-    margin: '20px 20px 0',
-    background: 'linear-gradient(135deg, #141414 0%, #1a1a0a 100%)',
-    border: '1px solid #2a2a1a',
-    borderRadius: 16, padding: '24px 20px',
-  },
-  nextLabel: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#666', letterSpacing: 3, marginBottom: 8 },
-  nextSplit: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 36, color: '#e8ff00', letterSpacing: 2, lineHeight: 1, marginBottom: 8 },
-  lastSession: { fontSize: 13, color: '#555', marginBottom: 20, fontFamily: "'DM Mono', monospace" },
-  startBtn: {
-    width: '100%', background: '#e8ff00', border: 'none',
-    borderRadius: 10, padding: '16px',
-    fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, letterSpacing: 3,
-    color: '#0a0a0a', cursor: 'pointer',
-  },
-  statsRow: { display: 'flex', gap: 12, margin: '16px 20px 0' },
-  statBox: {
-    flex: 1, background: '#111', border: '1px solid #1a1a1a',
-    borderRadius: 10, padding: '14px 12px',
-    display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center',
-  },
-  statVal: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: '#f0ede8', letterSpacing: 1 },
-  statLabel: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#555', letterSpacing: 1 },
+  header: { padding: '44px 20px 20px', borderBottom: '1px solid #161616' },
+  logoRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  logo: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 52, color: '#e8ff00', letterSpacing: 6, lineHeight: 1 },
+  blockInfo: { display: 'flex', gap: 6, alignItems: 'center' },
+  blockBadge: { fontFamily: "'DM Mono', monospace", fontSize: 10, background: '#e8ff0022', color: '#e8ff00', padding: '3px 8px', borderRadius: 20, letterSpacing: 1 },
+  phaseBadge: { fontFamily: "'DM Mono', monospace", fontSize: 10, background: '#ffffff11', color: '#888', padding: '3px 8px', borderRadius: 20, letterSpacing: 1 },
+  weekBadge: { fontFamily: "'DM Mono', monospace", fontSize: 10, background: '#ffffff11', color: '#888', padding: '3px 8px', borderRadius: 20, letterSpacing: 1 },
+  deloadAlert: { display: 'flex', gap: 8, alignItems: 'flex-start', background: '#1a0000', border: '1px solid #f87171', borderRadius: 10, padding: '10px 14px' },
+  fatigueAlert: { display: 'flex', gap: 8, alignItems: 'flex-start', background: '#1a1400', border: '1px solid #facc15', borderRadius: 10, padding: '10px 14px' },
+  alertText: { fontSize: 12, color: '#ccc', lineHeight: 1.5 },
+  nextCard: { margin: '16px 20px 0', background: '#111', border: '1px solid #1a1a1a', borderRadius: 16, padding: '20px' },
+  nextMeta: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#555', letterSpacing: 3, marginBottom: 6 },
+  nextTitle: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 36, color: '#e8ff00', letterSpacing: 2, lineHeight: 1, marginBottom: 2 },
+  nextFocus: { fontSize: 13, color: '#666', marginBottom: 4 },
+  lastTrained: { fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#444', marginBottom: 16 },
+  startBtn: { width: '100%', background: '#e8ff00', border: 'none', borderRadius: 10, padding: '16px', fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, letterSpacing: 4, color: '#0a0a0a', cursor: 'pointer', marginBottom: 8 },
+  freestyleBtn: { width: '100%', background: 'transparent', border: '1px solid #222', borderRadius: 10, padding: '12px', fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#555', cursor: 'pointer' },
+  statsRow: { display: 'flex', gap: 10, margin: '16px 20px 0' },
+  statBox: { flex: 1, background: '#111', border: '1px solid #161616', borderRadius: 10, padding: '12px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 },
+  statVal: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 26, color: '#f0ede8', letterSpacing: 1 },
+  statLabel: { fontFamily: "'DM Mono', monospace", fontSize: 9, color: '#555', letterSpacing: 1, textTransform: 'uppercase' },
   section: { margin: '24px 20px 0' },
-  sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  sectionTitle: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#555', letterSpacing: 3 },
+  sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  sectionTitle: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#444', letterSpacing: 3 },
   historyBtn: { background: 'none', border: 'none', color: '#e8ff00', fontSize: 12, cursor: 'pointer', fontFamily: "'DM Mono', monospace" },
-  sessionRow: {
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    padding: '12px 0', borderBottom: '1px solid #151515',
-  },
-  sessionLeft: { display: 'flex', flexDirection: 'column', gap: 3 },
-  sessionDay: { fontSize: 14, color: '#f0ede8', fontWeight: 500 },
-  sessionDate: { fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#555' },
-  sessionRight: { display: 'flex', alignItems: 'center', gap: 8 },
-  sessionExCount: { fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#555' },
-  fatigueDot: { width: 8, height: 8, borderRadius: '50%' },
-  prRow: {
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    padding: '10px 0', borderBottom: '1px solid #151515',
-  },
-  prName: { fontSize: 13, color: '#aaa' },
+  prRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #141414' },
+  prName: { fontSize: 13, color: '#888' },
   prWeight: { fontFamily: "'DM Mono', monospace", fontSize: 14, color: '#e8ff00', fontWeight: 500 },
-  footer: { textAlign: 'center', fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#2a2a2a', marginTop: 40, letterSpacing: 2 },
+  sessionRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #141414' },
+  sessionDay: { fontSize: 14, color: '#f0ede8', fontWeight: 500, marginBottom: 2 },
+  sessionDate: { fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#444' },
+  sessionRight: { display: 'flex', alignItems: 'center', gap: 8 },
+  sessionCount: { fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#555' },
+  fatigueDot: { width: 8, height: 8, borderRadius: '50%' },
+  footer: { textAlign: 'center', fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#1f1f1f', marginTop: 40, letterSpacing: 2 },
 }
