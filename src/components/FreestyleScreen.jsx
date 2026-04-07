@@ -1,10 +1,7 @@
 import { useState } from 'react'
-import { EXERCISES, EQUIPMENT_OPTIONS, GYM_PRESETS } from '../data/exercises.js'
+import { EXERCISES } from '../data/exercises.js'
 
 export default function FreestyleScreen({ onFinish, onBack }) {
-  const [equipment, setEquipment] = useState([
-    'barbell', 'dumbbells', 'cables', 'machines', 'bench', 'pull_up_bar'
-  ])
   const [exercises, setExercises] = useState([])
   const [showPicker, setShowPicker] = useState(false)
   const [filterMuscle, setFilterMuscle] = useState('all')
@@ -13,31 +10,18 @@ export default function FreestyleScreen({ onFinish, onBack }) {
   const [fatigueLevel, setFatigueLevel] = useState(3)
   const [sessionNotes, setSessionNotes] = useState('')
 
-  const muscles = ['all', 'chest', 'back', 'shoulders', 'biceps', 'triceps', 'quads', 'hamstrings', 'glutes', 'calves', 'core', 'full_body', 'lower_back', 'traps']
-
-  const availableExercises = Object.values(EXERCISES).filter(ex => {
-    const hasEquipment = ex.equipment.length === 0 || ex.equipment.every(eq => equipment.includes(eq))
-    const matchesMuscle = filterMuscle === 'all' || ex.muscle === filterMuscle
-    return hasEquipment && matchesMuscle
-  })
+  const muscles = ['all', 'chest', 'back', 'shoulders', 'biceps', 'triceps', 'quads', 'hamstrings', 'glutes', 'calves', 'core', 'lower_back', 'traps', 'full_body']
+  const availableExercises = Object.values(EXERCISES).filter(ex =>
+    filterMuscle === 'all' || ex.muscle === filterMuscle
+  )
 
   function addExercise(ex) {
     const newEx = {
-      id: `${ex.id}_${Date.now()}`,
-      exerciseId: ex.id,
-      name: ex.name,
-      muscle: ex.muscle,
-      pattern: ex.pattern,
-      isPrimary: false,
-      supersetWith: null,
+      id: `${ex.id}_${Date.now()}`, exerciseId: ex.id, name: ex.name,
+      muscle: ex.muscle, pattern: ex.pattern, isPrimary: false,
       sets: [{ setNumber: 1, weight: '', reps: '', rir: '', completed: false }],
-      repRange: ex.rep_range_accumulation,
-      targetRIR: ex.rir_target_accumulation,
-      restSeconds: ex.rest_accumulation,
-      notes: ex.notes,
-      warnings: [],
-      felt: null,
-      completed: false,
+      repRange: ex.rep_range_accumulation, targetRIR: ex.rir_target_accumulation,
+      restSeconds: ex.rest_accumulation, notes: ex.notes, warnings: [], swapHistory: [],
     }
     setExercises(prev => [...prev, newEx])
     setActiveIdx(exercises.length)
@@ -81,22 +65,21 @@ export default function FreestyleScreen({ onFinish, onBack }) {
       <div style={s.topBar}>
         <button style={s.backBtn} onClick={onBack}>← Back</button>
         <span style={s.title}>FREESTYLE</span>
-        {exercises.length > 0 && (
-          <button style={s.doneBtn} onClick={() => setShowFinish(true)}>Done</button>
-        )}
+        {exercises.length > 0 && <button style={s.doneBtn} onClick={() => setShowFinish(true)}>Done</button>}
+        {exercises.length === 0 && <span style={{ width: 50 }} />}
       </div>
 
       {exercises.length === 0 && (
-        <div style={s.empty}>
-          <div style={s.emptyText}>Add exercises to start your freestyle session</div>
-        </div>
+        <div style={s.empty}><div style={s.emptyText}>Add exercises to start</div></div>
       )}
 
       {exercises.map((ex, exIdx) => (
         <div key={ex.id} style={{ ...s.exCard, ...(activeIdx === exIdx ? s.exCardActive : {}) }} onClick={() => setActiveIdx(exIdx)}>
           <div style={s.exName}>{ex.name}</div>
+          <div style={s.exMuscle}>{ex.muscle?.replace('_', ' ')}</div>
           {activeIdx === exIdx && (
             <>
+              {ex.notes && <div style={s.exNote}>{ex.notes}</div>}
               <div style={s.setsHeader}>
                 <span style={s.setCol}>Set</span>
                 <span style={s.setCol}>Weight</span>
@@ -115,8 +98,8 @@ export default function FreestyleScreen({ onFinish, onBack }) {
                 </div>
               ))}
               <div style={s.setActions}>
-                <button style={s.setActionBtn} onClick={() => addSet(exIdx)}>+ Set</button>
-                <button style={s.setActionBtn} onClick={() => removeSet(exIdx)}>− Set</button>
+                <button style={s.setBtn} onClick={() => addSet(exIdx)}>+ Set</button>
+                <button style={s.setBtn} onClick={() => removeSet(exIdx)}>− Set</button>
               </div>
             </>
           )}
@@ -134,11 +117,7 @@ export default function FreestyleScreen({ onFinish, onBack }) {
             </div>
             <div style={s.muscleFilter}>
               {muscles.map(m => (
-                <button
-                  key={m}
-                  style={{ ...s.muscleBtn, ...(filterMuscle === m ? s.muscleBtnActive : {}) }}
-                  onClick={() => setFilterMuscle(m)}
-                >
+                <button key={m} style={{ ...s.muscleBtn, ...(filterMuscle === m ? s.muscleBtnActive : {}) }} onClick={() => setFilterMuscle(m)}>
                   {m === 'all' ? 'All' : m.replace('_', ' ')}
                 </button>
               ))}
@@ -165,7 +144,7 @@ export default function FreestyleScreen({ onFinish, onBack }) {
                 <button key={n} style={{ ...s.fatigueBtn, ...(fatigueLevel === n ? s.fatigueBtnActive : {}) }} onClick={() => setFatigueLevel(n)}>{n}</button>
               ))}
             </div>
-            <textarea style={s.notesInput} placeholder="Notes (optional)" value={sessionNotes} onChange={e => setSessionNotes(e.target.value)} rows={3} />
+            <textarea style={s.noteInput} placeholder="Notes (optional)" value={sessionNotes} onChange={e => setSessionNotes(e.target.value)} rows={3} />
             <button style={s.saveBtn} onClick={() => onFinish(exercises, fatigueLevel, sessionNotes)}>SAVE</button>
             <button style={s.cancelBtn} onClick={() => setShowFinish(false)}>Keep Going</button>
           </div>
@@ -182,10 +161,12 @@ const s = {
   title: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: '#7c3aed', letterSpacing: 4 },
   doneBtn: { background: 'none', border: '1px solid #222', borderRadius: 8, padding: '6px 14px', color: '#888', cursor: 'pointer', fontFamily: "'DM Mono', monospace", fontSize: 12 },
   empty: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '40vh' },
-  emptyText: { fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#333', textAlign: 'center' },
+  emptyText: { fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#333' },
   exCard: { margin: '10px 14px 0', background: '#111', border: '1px solid #1a1a1a', borderRadius: 12, padding: '16px', cursor: 'pointer' },
   exCardActive: { border: '1px solid #7c3aed' },
-  exName: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: '#f0ede8', letterSpacing: 1, marginBottom: 8 },
+  exName: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: '#f0ede8', letterSpacing: 1, marginBottom: 2 },
+  exMuscle: { fontFamily: "'DM Mono', monospace", fontSize: 9, color: '#444', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 },
+  exNote: { fontSize: 12, color: '#555', lineHeight: 1.5, marginBottom: 12, background: '#0a0a0a', borderRadius: 8, padding: '8px 10px' },
   setsHeader: { display: 'flex', gap: 6, marginBottom: 6 },
   setCol: { fontFamily: "'DM Mono', monospace", fontSize: 9, color: '#333', flex: 1, textAlign: 'center' },
   setRow: { display: 'flex', gap: 6, marginBottom: 6 },
@@ -193,7 +174,7 @@ const s = {
   input: { flex: 1, background: '#0a0a0a', border: '1px solid #1a1a1a', borderRadius: 8, padding: '10px 4px', color: '#f0ede8', fontFamily: "'DM Mono', monospace", fontSize: 15, textAlign: 'center', outline: 'none' },
   rirSelect: { flex: 1, background: '#0a0a0a', border: '1px solid #1a1a1a', borderRadius: 8, padding: '10px 4px', color: '#f0ede8', fontFamily: "'DM Mono', monospace", fontSize: 13, textAlign: 'center', outline: 'none' },
   setActions: { display: 'flex', gap: 6, marginTop: 8 },
-  setActionBtn: { flex: 1, background: 'transparent', border: '1px solid #1a1a1a', borderRadius: 8, padding: '8px', color: '#555', cursor: 'pointer', fontFamily: "'DM Mono', monospace", fontSize: 12 },
+  setBtn: { flex: 1, background: 'transparent', border: '1px solid #1a1a1a', borderRadius: 8, padding: '8px', color: '#555', cursor: 'pointer', fontFamily: "'DM Mono', monospace", fontSize: 12 },
   addBtn: { position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', background: '#7c3aed', border: 'none', borderRadius: 30, padding: '14px 32px', fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, letterSpacing: 3, color: '#fff', cursor: 'pointer', boxShadow: '0 4px 20px rgba(124,58,237,0.4)' },
   modal: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'flex-end', zIndex: 100 },
   modalCard: { background: '#111', border: '1px solid #1a1a1a', borderRadius: '20px 20px 0 0', padding: '24px 20px 48px', width: '100%', maxWidth: 480, margin: '0 auto', maxHeight: '85vh', overflowY: 'auto' },
@@ -207,11 +188,11 @@ const s = {
   exPickBtn: { background: '#0a0a0a', border: '1px solid #161616', borderRadius: 10, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', textAlign: 'left' },
   exPickName: { fontSize: 14, color: '#f0ede8', fontWeight: 500 },
   exPickMuscle: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#555', textTransform: 'capitalize' },
-  modalLabel: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#555', letterSpacing: 2, marginBottom: 12, marginTop: 20 },
+  modalLabel: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#555', letterSpacing: 2, marginBottom: 12, marginTop: 16 },
   fatigueRow: { display: 'flex', gap: 8, marginBottom: 16 },
   fatigueBtn: { flex: 1, background: '#0a0a0a', border: '1px solid #1a1a1a', borderRadius: 8, padding: '12px', color: '#555', cursor: 'pointer', fontFamily: "'Bebas Neue', sans-serif", fontSize: 22 },
   fatigueBtnActive: { background: '#7c3aed22', border: '1px solid #7c3aed', color: '#7c3aed' },
-  notesInput: { width: '100%', background: '#0a0a0a', border: '1px solid #1a1a1a', borderRadius: 10, padding: '12px', color: '#f0ede8', fontFamily: "'DM Sans', sans-serif", fontSize: 13, resize: 'none', outline: 'none', boxSizing: 'border-box', marginBottom: 16 },
+  noteInput: { width: '100%', background: '#0a0a0a', border: '1px solid #1a1a1a', borderRadius: 10, padding: '12px', color: '#f0ede8', fontFamily: "'DM Sans', sans-serif", fontSize: 13, resize: 'none', outline: 'none', boxSizing: 'border-box', marginBottom: 16 },
   saveBtn: { width: '100%', background: '#7c3aed', border: 'none', borderRadius: 12, padding: '16px', fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, letterSpacing: 4, color: '#fff', cursor: 'pointer', marginBottom: 10 },
   cancelBtn: { width: '100%', background: 'transparent', border: 'none', color: '#444', cursor: 'pointer', fontFamily: "'DM Mono', monospace", fontSize: 13, padding: '8px' },
 }

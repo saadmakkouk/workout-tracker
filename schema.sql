@@ -1,6 +1,9 @@
--- Drop and recreate with full schema for LIFT app
+-- LIFT App v2 Schema
+-- Run this in Supabase SQL Editor
+
 drop table if exists logs;
 drop table if exists sessions;
+drop table if exists bodyweight;
 
 create table sessions (
   id bigint generated always as identity primary key,
@@ -11,6 +14,7 @@ create table sessions (
   notes text,
   phase text,
   block_key text,
+  block_number int,
   session_number int
 );
 
@@ -23,5 +27,12 @@ create table logs (
   sets jsonb,
   target_reps text,
   target_rir int,
-  felt text
+  phase text,
+  block_key text
+);
+
+create table bodyweight (
+  id bigint generated always as identity primary key,
+  date timestamp default now(),
+  weight numeric
 );

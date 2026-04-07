@@ -11,6 +11,7 @@ style.textContent = `
   ::-webkit-scrollbar { display: none; }
   select { -webkit-appearance: none; appearance: none; }
   button { -webkit-tap-highlight-color: transparent; }
+  textarea { -webkit-appearance: none; }
 `
 document.head.appendChild(style)
 
