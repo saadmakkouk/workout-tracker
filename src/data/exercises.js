@@ -12,6 +12,7 @@ export const EXERCISES = {
     sets_default: 4, rep_range_strength: '3-5', rep_range_accumulation: '6-8',
     rir_target_strength: 1, rir_target_accumulation: 2,
     rest_strength: 180, rest_accumulation: 120, is_primary: true,
+    quality_score: 10,
     notes: 'Primary benchmark lift. Bar touches lower chest, elbows ~75 degrees. Control the eccentric.',
   },
   incline_barbell_bench: {
@@ -21,6 +22,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '5-7', rep_range_accumulation: '8-10',
     rir_target_strength: 1, rir_target_accumulation: 2,
     rest_strength: 120, rest_accumulation: 90, is_primary: false,
+    quality_score: 10,
     notes: '30-45 degree incline. Upper chest emphasis. Secondary press on Day 1.',
   },
   incline_dumbbell_press: {
@@ -30,6 +32,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '8-10', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 90, rest_accumulation: 75, is_primary: false,
+    quality_score: 10,
     notes: 'Volume day press. Greater ROM than barbell. Hits upper chest with stretch.',
   },
   dumbbell_bench: {
@@ -39,15 +42,17 @@ export const EXERCISES = {
     sets_default: 4, rep_range_strength: '6-8', rep_range_accumulation: '8-12',
     rir_target_strength: 1, rir_target_accumulation: 2,
     rest_strength: 120, rest_accumulation: 90, is_primary: false,
+    quality_score: 8,
     notes: 'Block rotation flat press. Greater ROM, independent arm movement.',
   },
   weighted_dips: {
     id: 'weighted_dips', name: 'Weighted Dips',
-    muscle: 'chest', pattern: 'dip', tier: 2,
+    muscle: 'chest', pattern: 'dip', tier: 1,
     equipment: ['dip_bar'],
     sets_default: 3, rep_range_strength: '6-8', rep_range_accumulation: '8-10',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 90, rest_accumulation: 75, is_primary: false,
+    quality_score: 8,
     notes: 'Lean forward 30-45° for lower chest emphasis. Highest lower pec activation of any exercise. Introduce gradually, limit depth to 90° initially. Monitor shoulders.',
   },
   pec_deck_fly: {
@@ -57,6 +62,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '12-15', rep_range_accumulation: '12-15',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 8,
     notes: 'Chest isolation. Constant tension through full stretch. Excellent hypertrophy stimulus.',
   },
 
@@ -68,6 +74,7 @@ export const EXERCISES = {
     sets_default: 4, rep_range_strength: '4-6', rep_range_accumulation: '6-8',
     rir_target_strength: 1, rir_target_accumulation: 2,
     rest_strength: 180, rest_accumulation: 120, is_primary: true,
+    quality_score: 10,
     notes: 'Standing strict barbell press. Primary Day 3 benchmark. Builds shoulder girdle, triceps, upper chest, core stability.',
   },
   dumbbell_ohp: {
@@ -77,6 +84,7 @@ export const EXERCISES = {
     sets_default: 4, rep_range_strength: '8-10', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 90, rest_accumulation: 75, is_primary: false,
+    quality_score: 8,
     notes: 'Block rotation OHP variation. Greater ROM, independent arm movement.',
   },
 
@@ -88,24 +96,27 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '12-15', rep_range_accumulation: '15-20',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 10,
     notes: 'Side delt isolation. Cable provides constant tension. Lean slightly away from stack for better stretch.',
   },
   face_pull: {
     id: 'face_pull', name: 'Face Pull',
-    muscle: 'shoulders', pattern: 'rear_delt', tier: 3,
+    muscle: 'shoulders', pattern: 'rear_delt', tier: 1,
     equipment: ['cables'],
     sets_default: 3, rep_range_strength: '15-20', rep_range_accumulation: '15-20',
     rir_target_strength: 3, rir_target_accumulation: 3,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 10,
     notes: 'Non-negotiable shoulder health exercise. Rear delt and external rotator. Light weight, full external rotation at end. Every upper day.',
   },
   rear_delt_pec_deck: {
     id: 'rear_delt_pec_deck', name: 'Rear Delt Pec Deck',
-    muscle: 'shoulders', pattern: 'rear_delt', tier: 3,
+    muscle: 'shoulders', pattern: 'rear_delt', tier: 2,
     equipment: ['machines'],
     sets_default: 3, rep_range_strength: '12-15', rep_range_accumulation: '15-20',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 9,
     notes: 'Best rear delt isolation. Load heavier than reverse fly. Squeeze at full extension.',
   },
 
@@ -117,6 +128,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '5-7', rep_range_accumulation: '6-8',
     rir_target_strength: 1, rir_target_accumulation: 2,
     rest_strength: 120, rest_accumulation: 90, is_primary: true,
+    quality_score: 10,
     notes: 'Primary vertical pull. Add weight via belt. Full dead hang at bottom, chin over bar at top.',
   },
   lat_pulldown: {
@@ -126,15 +138,17 @@ export const EXERCISES = {
     sets_default: 4, rep_range_strength: '8-10', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 90, rest_accumulation: 75, is_primary: false,
+    quality_score: 8,
     notes: 'Volume day vertical pull. Wide grip. Initiate with elbows not hands. Squeeze lats at bottom.',
   },
   lat_prayer: {
     id: 'lat_prayer', name: 'Straight Arm Pulldown (Lat Prayer)',
-    muscle: 'back', pattern: 'lat_isolation', tier: 3,
+    muscle: 'back', pattern: 'lat_isolation', tier: 2,
     equipment: ['cables'],
     sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '12-15',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 10,
     notes: 'Pure lat isolation — no bicep involvement. Lean torso forward on eccentric for maximum lat stretch. EMG superior to lat pulldown for lat isolation. Menno Henselmans variation.',
   },
 
@@ -146,6 +160,7 @@ export const EXERCISES = {
     sets_default: 4, rep_range_strength: '4-6', rep_range_accumulation: '6-8',
     rir_target_strength: 1, rir_target_accumulation: 2,
     rest_strength: 180, rest_accumulation: 120, is_primary: true,
+    quality_score: 10,
     notes: 'Primary horizontal pull benchmark. Overhand grip, hinge to ~45 degrees, row to lower sternum. Builds total back thickness.',
   },
   cable_row: {
@@ -155,6 +170,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 75, rest_accumulation: 75, is_primary: false,
+    quality_score: 7,
     notes: 'Volume day horizontal pull. Constant tension. Drive elbows behind torso, squeeze mid back.',
   },
   chest_supported_row: {
@@ -164,6 +180,7 @@ export const EXERCISES = {
     sets_default: 4, rep_range_strength: '8-10', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 90, rest_accumulation: 75, is_primary: false,
+    quality_score: 9,
     notes: 'Block rotation row. Takes lower back completely out. Pure back stimulus.',
   },
 
@@ -175,6 +192,7 @@ export const EXERCISES = {
     sets_default: 5, rep_range_strength: '3-5', rep_range_accumulation: '5-7',
     rir_target_strength: 1, rir_target_accumulation: 2,
     rest_strength: 240, rest_accumulation: 180, is_primary: true,
+    quality_score: 10,
     notes: 'Primary squat benchmark. High or low bar based on preference. Depth below parallel. King of lower body.',
   },
   front_squat: {
@@ -184,6 +202,7 @@ export const EXERCISES = {
     sets_default: 4, rep_range_strength: '4-6', rep_range_accumulation: '6-8',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 180, rest_accumulation: 120, is_primary: false,
+    quality_score: 10,
     notes: 'Block 2 squat rotation. More upright torso, more quad dominant, less lower back stress.',
   },
   hack_squat: {
@@ -193,6 +212,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '8-10', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 90, rest_accumulation: 75, is_primary: false,
+    quality_score: 9,
     notes: 'Day 4 quad volume. Lower back removed entirely. Full depth. Knees track over toes.',
   },
   leg_press: {
@@ -202,6 +222,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '8-10', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 90, rest_accumulation: 75, is_primary: false,
+    quality_score: 7,
     notes: 'Quad volume after squat. Lower back gets a break. Full ROM, never lock knees at top.',
   },
   leg_extension: {
@@ -211,6 +232,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '12-15', rep_range_accumulation: '12-15',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 6,
     notes: 'Direct quad isolation finisher. Pause at full extension. Slow eccentric.',
   },
   bulgarian_split_squat: {
@@ -220,6 +242,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '8-10', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 90, rest_accumulation: 75, is_primary: false,
+    quality_score: 9,
     notes: 'Unilateral quad and glute. Addresses left-right imbalances. Rear foot elevated on bench. Per leg.',
   },
 
@@ -231,6 +254,7 @@ export const EXERCISES = {
     sets_default: 4, rep_range_strength: '3-5', rep_range_accumulation: '4-6',
     rir_target_strength: 1, rir_target_accumulation: 2,
     rest_strength: 240, rest_accumulation: 180, is_primary: true,
+    quality_score: 10,
     notes: 'Primary hinge benchmark on Day 4. Done AFTER athletic work. Brace hard, lat engagement before lift, hip drive at lockout.',
   },
   trap_bar_deadlift: {
@@ -240,6 +264,7 @@ export const EXERCISES = {
     sets_default: 4, rep_range_strength: '4-6', rep_range_accumulation: '5-7',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 180, rest_accumulation: 150, is_primary: false,
+    quality_score: 9,
     notes: 'Block rotation deadlift. More quad dominant, easier on lower back. High handles option.',
   },
   stiff_leg_deadlift: {
@@ -249,6 +274,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '6-8', rep_range_accumulation: '8-10',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 120, rest_accumulation: 90, is_primary: false,
+    quality_score: 9,
     notes: 'Block rotation RDL variation. Legs nearly straight, maximum hamstring stretch. Bar stays close.',
   },
   rdl: {
@@ -258,6 +284,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '6-8', rep_range_accumulation: '8-10',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 120, rest_accumulation: 90, is_primary: false,
+    quality_score: 10,
     notes: 'Primary hamstring hinge on Day 2. Hips back, slight knee bend, full hamstring stretch. Bar stays close to legs.',
   },
 
@@ -269,6 +296,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 75, rest_accumulation: 75, is_primary: false,
+    quality_score: 6,
     notes: 'Direct hamstring isolation Day 2. Full stretch at bottom, squeeze at top.',
   },
   seated_leg_curl: {
@@ -278,24 +306,27 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '12-15',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 75, rest_accumulation: 60, is_primary: false,
+    quality_score: 7,
     notes: 'Hamstring isolation Day 4. Seated creates greater hip flexion stretch vs lying.',
   },
   nordic_curl: {
     id: 'nordic_curl', name: 'Nordic Curl',
-    muscle: 'hamstrings', pattern: 'hamstring_eccentric', tier: 2,
+    muscle: 'hamstrings', pattern: 'hamstring_eccentric', tier: 1,
     equipment: [],
     sets_default: 3, rep_range_strength: '4-6', rep_range_accumulation: '6-8',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 90, rest_accumulation: 90, is_primary: false,
+    quality_score: 10,
     notes: 'Evidence: halves hamstring injury rate in soccer players (meta-analysis, 8459 athletes). Superior eccentric hamstring strength. Introduce gradually — extremely demanding. Anchor feet, lower slowly.',
   },
   ghr: {
     id: 'ghr', name: 'Glute Ham Raise',
-    muscle: 'hamstrings', pattern: 'hamstring_eccentric', tier: 2,
+    muscle: 'hamstrings', pattern: 'hamstring_eccentric', tier: 1,
     equipment: ['machines'],
     sets_default: 3, rep_range_strength: '5-8', rep_range_accumulation: '8-10',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 90, rest_accumulation: 90, is_primary: false,
+    quality_score: 10,
     notes: 'Highest concentric hamstring EMG of any exercise. Trains hamstrings through both knee flexion AND hip extension simultaneously. Louie Simmons called it the greatest hamstring developer. Use if GHD machine available.',
   },
 
@@ -307,6 +338,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '8-10', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 90, rest_accumulation: 75, is_primary: false,
+    quality_score: 9,
     notes: 'Best shortened-position glute stimulus. Fills the gap squats and deadlifts leave. Unique peak contraction. For hypertrophy not athletic performance — athletic transfer evidence is mixed.',
   },
   cable_pull_through: {
@@ -316,6 +348,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '12-15', rep_range_accumulation: '12-15',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 8,
     notes: 'Direct glute and posterior chain. Constant cable tension. Hinge pattern, squeeze glutes hard at lockout.',
   },
 
@@ -327,15 +360,17 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '12-15', rep_range_accumulation: '12-15',
     rir_target_strength: 3, rir_target_accumulation: 3,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 8,
     notes: 'Direct lower back builder. Day 4 only — away from heavy spinal loading days. Bodyweight or light plate. Control the movement.',
   },
   reverse_hyper: {
     id: 'reverse_hyper', name: 'Reverse Hyperextension',
-    muscle: 'lower_back', pattern: 'back_extension', tier: 3,
+    muscle: 'lower_back', pattern: 'back_extension', tier: 2,
     equipment: ['machines'],
     sets_default: 3, rep_range_strength: '12-15', rep_range_accumulation: '15-20',
     rir_target_strength: 3, rir_target_accumulation: 3,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 9,
     notes: 'Posterior chain AND spinal decompression. Louie Simmons used with every serious powerlifter. Strengthens and recovers lower back simultaneously.',
   },
 
@@ -347,6 +382,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 8,
     notes: 'Gastrocnemius primary. Full stretch at bottom, pause at top. Slow eccentric.',
   },
   seated_calf_raise: {
@@ -356,17 +392,19 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '12-15', rep_range_accumulation: '12-15',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 8,
     notes: 'Soleus specific — knee bent changes muscle emphasis. Full ROM every rep.',
   },
 
   // ─── BICEPS ──────────────────────────────────────────────────────
   ez_bar_curl: {
     id: 'ez_bar_curl', name: 'EZ Bar Curl',
-    muscle: 'biceps', pattern: 'curl', tier: 1,
+    muscle: 'biceps', pattern: 'curl', tier: 2,
     equipment: ['barbell'],
     sets_default: 3, rep_range_strength: '6-8', rep_range_accumulation: '8-10',
     rir_target_strength: 1, rir_target_accumulation: 2,
     rest_strength: 90, rest_accumulation: 75, is_primary: false,
+    quality_score: 9,
     notes: 'Primary bicep strength. EZ bar easier on wrists. No swinging. Full extension at bottom.',
   },
   barbell_curl: {
@@ -376,6 +414,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '6-8', rep_range_accumulation: '8-10',
     rir_target_strength: 1, rir_target_accumulation: 2,
     rest_strength: 90, rest_accumulation: 75, is_primary: false,
+    quality_score: 8,
     notes: 'Block rotation bicep. Straight bar, maximum supination. Strict form.',
   },
   hammer_curl: {
@@ -385,15 +424,17 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 7,
     notes: 'Volume day bicep. Neutral grip hits brachialis and brachioradialis. Arm thickness and forearm.',
   },
   incline_curl: {
     id: 'incline_curl', name: 'Incline Dumbbell Curl',
-    muscle: 'biceps', pattern: 'curl', tier: 3,
+    muscle: 'biceps', pattern: 'curl', tier: 1,
     equipment: ['dumbbells', 'bench'],
     sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 10,
     notes: 'Long head bicep stretch. Maximum stretch position grows the bicep peak. Light weight.',
   },
   preacher_curl: {
@@ -403,6 +444,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '8-10', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 75, rest_accumulation: 60, is_primary: false,
+    quality_score: 7,
     notes: 'Short head and brachialis emphasis. Rotate in for EZ curl periodically. Research shows distinct regional hypertrophy vs incline curl.',
   },
 
@@ -414,6 +456,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '6-8', rep_range_accumulation: '8-10',
     rir_target_strength: 1, rir_target_accumulation: 2,
     rest_strength: 90, rest_accumulation: 75, is_primary: false,
+    quality_score: 10,
     notes: 'Primary tricep strength. EZ bar or straight bar. Lower to forehead slowly. Directly supports bench lockout.',
   },
   overhead_cable_extension: {
@@ -423,6 +466,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 10,
     notes: 'Long head tricep with full overhead stretch. Constant cable tension. Best long head builder.',
   },
   tricep_pushdown: {
@@ -432,6 +476,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '12-15', rep_range_accumulation: '12-15',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 6,
     notes: 'Lateral and medial head finisher. Rope or straight bar. Elbows pinned to sides.',
   },
   close_grip_bench: {
@@ -441,6 +486,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '6-8', rep_range_accumulation: '8-10',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 90, rest_accumulation: 75, is_primary: false,
+    quality_score: 8,
     notes: 'Block rotation tricep strength. Grip shoulder width, elbows tucked. Compound tricep builder.',
   },
 
@@ -452,6 +498,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '6-8', rep_range_accumulation: '8-10',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 75, rest_accumulation: 60, is_primary: false,
+    quality_score: 8,
     notes: 'Direct trap builder. Heavy loading. Pause at top. Traps also heavily stimulated through deadlifts and rows.',
   },
 
@@ -463,6 +510,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '8-10', rep_range_accumulation: '8-10',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 75, rest_accumulation: 75, is_primary: false,
+    quality_score: 9,
     notes: 'Core stability directly supports squat and deadlift. Full rollout, brace hard, pull back with lats.',
   },
   hanging_leg_raise: {
@@ -472,6 +520,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '10-15', rep_range_accumulation: '10-15',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 8,
     notes: 'Lower abs and hip flexors. Dead hang, raise legs to parallel or above. Control the descent.',
   },
   cable_crunch: {
@@ -481,6 +530,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '12-15', rep_range_accumulation: '15-20',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 8,
     notes: 'Weighted ab work. Kneeling, crunch with abs not hip flexors. Hold contraction at bottom.',
   },
 
@@ -492,6 +542,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '5', rep_range_accumulation: '5',
     rir_target_strength: 5, rir_target_accumulation: 5,
     rest_strength: 90, rest_accumulation: 90, is_primary: false,
+    quality_score: 10,
     notes: 'ALWAYS first on Day 4 — CNS must be fresh. Maximum intent every rep. Step down never jump down. Rebuilds vertical explosiveness.',
   },
   broad_jump: {
@@ -501,6 +552,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '5', rep_range_accumulation: '5',
     rir_target_strength: 5, rir_target_accumulation: 5,
     rest_strength: 90, rest_accumulation: 90, is_primary: false,
+    quality_score: 10,
     notes: 'ALWAYS second on Day 4 after box jumps. Horizontal power — transfers directly to sprint speed and soccer acceleration.',
   },
 
@@ -512,6 +564,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '12-15',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 9,
     notes: 'Rotational core power — directly transfers to soccer kicking and sprinting mechanics. Set cable high, chop diagonally across body. Both directions each set. Only rotational exercise in the programme.',
   },
   standing_cable_hamstring_curl: {
@@ -521,6 +574,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '12-15',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 7,
     notes: 'Ankle strap on low cable. Standing single leg hamstring curl. Different stimulus to lying/seated — trains hamstring in upright athletic position. Squeeze hard at top.',
   },
   single_leg_rdl: {
@@ -530,6 +584,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '8-10', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 75, rest_accumulation: 75, is_primary: false,
+    quality_score: 9,
     notes: 'Unilateral hinge — directly addresses left-right hamstring imbalance. Dumbbell in opposite hand to working leg. Hip hinge, feel full stretch. Per leg. Especially important given right hamstring history.',
   },
   dumbbell_lateral_raise: {
@@ -539,15 +594,17 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '12-15', rep_range_accumulation: '15-20',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 10,
     notes: 'Equipment alternative to cable lateral raise. Research shows identical hypertrophy outcomes. Use when cables are busy. Lean-in variation for better stretch at bottom.',
   },
   bayesian_curl: {
     id: 'bayesian_curl', name: 'Bayesian Cable Curl',
-    muscle: 'biceps', pattern: 'curl', tier: 3,
+    muscle: 'biceps', pattern: 'curl', tier: 1,
     equipment: ['cables'],
     sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '12-15',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 10,
     notes: 'Cable set behind you at hip height. Step forward, arm extended back. Maximum long head bicep stretch at bottom. Popularised by Menno Henselmans. Single arm, supinate fully at top.',
   },
   spider_curl: {
@@ -557,6 +614,7 @@ export const EXERCISES = {
     sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    quality_score: 9,
     notes: 'Chest on incline bench, arms hanging straight down. Best short head bicep exercise at lengthened position. Constant tension throughout. Builds the bicep peak.',
   },
 }
@@ -585,8 +643,9 @@ export const PROGRAMME = {
       { exerciseId: 'back_squat', isPrimary: true },
       { exerciseId: 'rdl', isPrimary: false },
       { exerciseId: 'leg_press', isPrimary: false },
-      { exerciseId: 'lying_leg_curl', isPrimary: false },
+      { exerciseId: 'nordic_curl', isPrimary: false },
       { exerciseId: 'standing_calf_raise', isPrimary: false },
+      { exerciseId: 'cable_pull_through', isPrimary: false },
       { exerciseId: 'ab_wheel', isPrimary: false },
     ]
   },
@@ -604,7 +663,7 @@ export const PROGRAMME = {
       { exerciseId: 'rear_delt_pec_deck', isPrimary: false },
       { exerciseId: 'cable_lateral_raise', isPrimary: false },
       { exerciseId: 'overhead_cable_extension', isPrimary: false },
-      { exerciseId: 'hammer_curl', isPrimary: false },
+      { exerciseId: 'bayesian_curl', isPrimary: false },
       { exerciseId: 'tricep_pushdown', isPrimary: false },
       { exerciseId: 'reverse_hyper', isPrimary: false },
     ]
@@ -621,9 +680,11 @@ export const PROGRAMME = {
       { exerciseId: 'hip_thrust', isPrimary: false },
       { exerciseId: 'leg_extension', isPrimary: false },
       { exerciseId: 'seated_leg_curl', isPrimary: false },
+      { exerciseId: 'nordic_curl', isPrimary: false },
       { exerciseId: 'cable_pull_through', isPrimary: false },
       { exerciseId: 'back_extension', isPrimary: false },
       { exerciseId: 'seated_calf_raise', isPrimary: false },
+      { exerciseId: 'cable_woodchopper', isPrimary: false },
       { exerciseId: 'hanging_leg_raise', isPrimary: false },
     ]
   },

@@ -132,16 +132,22 @@ function findSmartAlternative({ targetExercise, availableEquipment, usedExercise
   const scored = candidates.map(ex => {
     let score = 0
 
+    // ── QUALITY SCORE (dominant factor — evidence-based exercise ranking) ──
+    // Scale 1-10, multiplied by 5 so quality contributes up to 50 points
+    // Best evidence-based exercise always wins over a worse one
+    score += (ex.quality_score ?? 5) * 5
+
     // Strong preference: same muscle
     if (ex.muscle === targetExercise.muscle) score += 40
-
-    // Similar training role / difficulty
-    if (ex.tier === targetExercise.tier) score += 20
-    else if (Math.abs((ex.tier ?? 99) - (targetExercise.tier ?? 99)) === 1) score += 10
 
     // Match primary / accessory intent of the slot
     if ((ex.is_primary ?? false) === targetWantsPrimary) score += 18
 
+    // Tier as tiebreaker only — quality score is dominant
+    if (ex.tier === targetExercise.tier) score += 8
+    else if (Math.abs((ex.tier ?? 99) - (targetExercise.tier ?? 99)) === 1) score += 4
+
+    // ── DUPLICATE PREVENTION (untouched) ──
     // Prefer exercises that keep the day varied instead of piling on fatigue
     if (usedPatterns.includes(ex.pattern)) score -= 6
 
