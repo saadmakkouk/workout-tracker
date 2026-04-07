@@ -74,32 +74,94 @@ export function getWarmupSets(workingWeight) {
 }
 
 // ─── EXERCISE RESOLUTION ─────────────────────────────────────────
-export function resolveExercise(baseExerciseId, blockKey, availableEquipment) {
+export function resolveExercise(baseExerciseId, blockKey, availableEquipment, usedExercises = [], slot = null) {
   const rotation = BLOCK_ROTATIONS[blockKey]
   const resolvedId = rotation?.[baseExerciseId] || baseExerciseId
-  const exercise = EXERCISES[resolvedId] || EXERCISES[baseExerciseId]
-  if (!exercise) return null
 
-  const hasEquipment = exercise.equipment.length === 0 ||
-    exercise.equipment.every(eq => availableEquipment.includes(eq))
+  const baseExercise = EXERCISES[baseExerciseId]
+  const rotatedExercise = EXERCISES[resolvedId]
+  const preferredExercise = rotatedExercise || baseExercise
+  if (!preferredExercise) return null
 
-  if (!hasEquipment) {
-    const base = EXERCISES[baseExerciseId]
-    if (base) {
-      const baseHas = base.equipment.length === 0 ||
-        base.equipment.every(eq => availableEquipment.includes(eq))
-      if (baseHas) return base
-    }
-    return findAlternative(exercise.pattern, availableEquipment, baseExerciseId) || exercise
+  const usedExerciseIds = usedExercises.map(ex => ex.id)
+
+  // 1) Prefer rotated exercise if available and unused
+  if (exerciseIsUsable(rotatedExercise, availableEquipment, usedExerciseIds)) {
+    return rotatedExercise
   }
-  return exercise
+
+  // 2) Fall back to base exercise if available and unused
+  if (exerciseIsUsable(baseExercise, availableEquipment, usedExerciseIds)) {
+    return baseExercise
+  }
+
+  // 3) Smart substitute: same pattern, but ranked intelligently
+  const substitute = findSmartAlternative({
+    targetExercise: preferredExercise,
+    availableEquipment,
+    usedExercises,
+    slot,
+    excludeIds: [baseExerciseId, resolvedId, ...usedExerciseIds],
+  })
+
+  return substitute || null
 }
 
-function findAlternative(pattern, availableEquipment, excludeId) {
-  return Object.values(EXERCISES).find(ex =>
-    ex.pattern === pattern && ex.id !== excludeId &&
+function exerciseIsUsable(exercise, availableEquipment, usedExerciseIds = []) {
+  if (!exercise) return false
+  const hasEquipment =
+    exercise.equipment.length === 0 ||
+    exercise.equipment.every(eq => availableEquipment.includes(eq))
+  return hasEquipment && !usedExerciseIds.includes(exercise.id)
+}
+
+function findSmartAlternative({ targetExercise, availableEquipment, usedExercises = [], slot = null, excludeIds = [] }) {
+  const candidates = Object.values(EXERCISES).filter(ex =>
+    ex.pattern === targetExercise.pattern &&
+    !excludeIds.includes(ex.id) &&
     (ex.equipment.length === 0 || ex.equipment.every(eq => availableEquipment.includes(eq)))
-  ) || null
+  )
+
+  if (candidates.length === 0) return null
+
+  const usedPatterns = usedExercises.map(ex => ex.pattern)
+  const usedBarbell = usedExercises.some(ex => ex.equipment?.includes('barbell'))
+  const usedPrimarySamePattern = usedExercises.some(ex => ex.pattern === targetExercise.pattern && ex.is_primary)
+  const targetWantsPrimary = slot?.isPrimary ?? targetExercise.is_primary ?? false
+
+  const scored = candidates.map(ex => {
+    let score = 0
+
+    // Strong preference: same muscle
+    if (ex.muscle === targetExercise.muscle) score += 40
+
+    // Similar training role / difficulty
+    if (ex.tier === targetExercise.tier) score += 20
+    else if (Math.abs((ex.tier ?? 99) - (targetExercise.tier ?? 99)) === 1) score += 10
+
+    // Match primary / accessory intent of the slot
+    if ((ex.is_primary ?? false) === targetWantsPrimary) score += 18
+
+    // Prefer exercises that keep the day varied instead of piling on fatigue
+    if (usedPatterns.includes(ex.pattern)) score -= 6
+
+    // If we've already used a primary of this pattern, penalize another primary hard
+    if (usedPrimarySamePattern && ex.is_primary) score -= 30
+
+    // If the workout already includes barbell work, slightly penalize extra barbell substitutes
+    if (usedBarbell && ex.equipment?.includes('barbell')) score -= 14
+
+    // Slight preference for non-machine replacements when machines are unavailable
+    if (targetExercise.equipment?.includes('machines') && !ex.equipment?.includes('machines')) score += 6
+
+    // Prefer lower-fatigue accessory-ish options when replacing a non-primary slot
+    if (!targetWantsPrimary && !(ex.is_primary ?? false)) score += 10
+
+    return { ex, score }
+  })
+
+  scored.sort((a, b) => b.score - a.score)
+  return scored[0]?.ex || null
 }
 
 // ─── WORKOUT GENERATION ──────────────────────────────────────────
@@ -109,23 +171,35 @@ export function generateWorkout(sessionCount, dayType, availableEquipment, allLo
   const dayProgramme = PROGRAMME[dayType]
   const readinessData = readiness ? getReadinessMultiplier(readiness.sleep, readiness.stress, readiness.physical) : null
 
+  const usedExercises = []
+
   const exercises = dayProgramme.order.map(slot => {
-    const exercise = resolveExercise(slot.exerciseId, blockKey, availableEquipment)
+    const exercise = resolveExercise(slot.exerciseId, blockKey, availableEquipment, usedExercises, slot)
     if (!exercise) return null
+
+    usedExercises.push(exercise)
 
     const targetData = calculateTarget(exercise, phase, allLogs, readinessData?.multiplier || 1.0)
     const sets = buildSets(exercise, phase, targetData)
 
     return {
-      id: `${exercise.id}_${Date.now()}_${Math.random().toString(36).substr(2,5)}`,
+      id: `${exercise.id}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
       exerciseId: exercise.id,
       name: exercise.name,
       muscle: exercise.muscle,
       pattern: exercise.pattern,
       isPrimary: slot.isPrimary,
       sets,
-      repRange: phase.phase === 'accumulation' ? exercise.rep_range_accumulation : phase.phase === 'deload' ? exercise.rep_range_accumulation : exercise.rep_range_strength,
-      targetRIR: phase.phase === 'deload' ? 4 : phase.phase === 'intensification' ? exercise.rir_target_strength : exercise.rir_target_accumulation,
+      repRange: phase.phase === 'accumulation'
+        ? exercise.rep_range_accumulation
+        : phase.phase === 'deload'
+          ? exercise.rep_range_accumulation
+          : exercise.rep_range_strength,
+      targetRIR: phase.phase === 'deload'
+        ? 4
+        : phase.phase === 'intensification'
+          ? exercise.rir_target_strength
+          : exercise.rir_target_accumulation,
       restSeconds: phase.phase === 'accumulation' ? exercise.rest_accumulation : exercise.rest_strength,
       notes: exercise.notes,
       warnings: [],
@@ -330,7 +404,7 @@ export function getBlockSummary(sessions, allLogs, blockKey) {
 
     if (logs.length >= 2) {
       const firstSets = (() => { try { return typeof logs[0].sets === 'string' ? JSON.parse(logs[0].sets) : logs[0].sets || [] } catch { return [] } })()
-      const lastSets = (() => { try { return typeof logs[logs.length-1].sets === 'string' ? JSON.parse(logs[logs.length-1].sets) : logs[logs.length-1].sets || [] } catch { return [] } })()
+      const lastSets = (() => { try { return typeof logs[logs.length - 1].sets === 'string' ? JSON.parse(logs[logs.length - 1].sets) : logs[logs.length - 1].sets || [] } catch { return [] } })()
       const firstMax = Math.max(...firstSets.map(s => parseFloat(s.weight) || 0))
       const lastMax = Math.max(...lastSets.map(s => parseFloat(s.weight) || 0))
       if (firstMax > 0) {
