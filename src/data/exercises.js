@@ -447,7 +447,7 @@ export const EXERCISES = {
   },
   floor_leg_raise: {
     id: 'floor_leg_raise', name: 'Floor Leg Raise',
-    muscle: 'core', pattern: 'core_flexion', tier: 3,
+    muscle: 'core', pattern: 'core', tier: 3,
     equipment: [],
     sets_default: 3, rep_range_strength: '12-15', rep_range_accumulation: '15-20',
     rir_target_strength: 2, rir_target_accumulation: 2,
@@ -595,7 +595,7 @@ export const EXERCISES = {
   // ─── CORE ────────────────────────────────────────────────────────
   ab_wheel: {
     id: 'ab_wheel', name: 'Ab Wheel Rollout',
-    muscle: 'core', pattern: 'core_stability', tier: 3,
+    muscle: 'core', pattern: 'core', tier: 3,
     equipment: [],
     sets_default: 3, rep_range_strength: '8-10', rep_range_accumulation: '8-10',
     rir_target_strength: 2, rir_target_accumulation: 2,
@@ -605,7 +605,7 @@ export const EXERCISES = {
   },
   hanging_leg_raise: {
     id: 'hanging_leg_raise', name: 'Hanging Leg Raise',
-    muscle: 'core', pattern: 'core_flexion', tier: 3,
+    muscle: 'core', pattern: 'core', tier: 3,
     equipment: ['pull_up_bar'],
     sets_default: 3, rep_range_strength: '10-15', rep_range_accumulation: '10-15',
     rir_target_strength: 2, rir_target_accumulation: 2,
@@ -615,7 +615,7 @@ export const EXERCISES = {
   },
   cable_crunch: {
     id: 'cable_crunch', name: 'Cable Crunch',
-    muscle: 'core', pattern: 'core_flexion', tier: 3,
+    muscle: 'core', pattern: 'core', tier: 3,
     equipment: ['cables'],
     sets_default: 3, rep_range_strength: '12-15', rep_range_accumulation: '15-20',
     rir_target_strength: 2, rir_target_accumulation: 2,
@@ -649,7 +649,7 @@ export const EXERCISES = {
   // ─── NEW ADDITIONS ───────────────────────────────────────────────
   cable_woodchopper: {
     id: 'cable_woodchopper', name: 'Cable Woodchopper',
-    muscle: 'core', pattern: 'core_rotation', tier: 3,
+    muscle: 'core', pattern: 'core', tier: 3,
     equipment: ['cables'],
     sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '12-15',
     rir_target_strength: 2, rir_target_accumulation: 2,
