@@ -280,6 +280,15 @@ export const EXERCISES = {
     rest_strength: 75, rest_accumulation: 60, is_primary: false,
     notes: 'Hamstring isolation Day 4. Seated creates greater hip flexion stretch vs lying.',
   },
+  standing_cable_leg_curl: {
+    id: 'standing_cable_leg_curl', name: 'Standing Cable Leg Curl',
+    muscle: 'hamstrings', pattern: 'hamstring_isolation', tier: 3,
+    equipment: ['cables'],
+    sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '12-15',
+    rir_target_strength: 2, rir_target_accumulation: 2,
+    rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    notes: 'Use ankle strap from low pulley. Stand tall, slight forward lean if needed, curl heel toward glute with control. Great machine-free hamstring isolation option.',
+  },
   nordic_curl: {
     id: 'nordic_curl', name: 'Nordic Curl',
     muscle: 'hamstrings', pattern: 'hamstring_eccentric', tier: 2,
@@ -357,6 +366,15 @@ export const EXERCISES = {
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
     notes: 'Soleus specific — knee bent changes muscle emphasis. Full ROM every rep.',
+  },
+  single_leg_calf_raise: {
+    id: 'single_leg_calf_raise', name: 'Single Leg Calf Raise',
+    muscle: 'calves', pattern: 'calf_raise', tier: 3,
+    equipment: [],
+    sets_default: 3, rep_range_strength: '12-15', rep_range_accumulation: '15-20',
+    rir_target_strength: 2, rir_target_accumulation: 2,
+    rest_strength: 45, rest_accumulation: 45, is_primary: false,
+    notes: 'Bodyweight or hold a dumbbell for load. Full stretch at bottom, hard pause at top. Excellent non-machine calf option.',
   },
 
   // ─── BICEPS ──────────────────────────────────────────────────────
@@ -483,6 +501,15 @@ export const EXERCISES = {
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
     notes: 'Weighted ab work. Kneeling, crunch with abs not hip flexors. Hold contraction at bottom.',
   },
+  woodchopper: {
+    id: 'woodchopper', name: 'Cable Woodchopper',
+    muscle: 'core', pattern: 'core_rotation', tier: 3,
+    equipment: ['cables'],
+    sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '12-15',
+    rir_target_strength: 2, rir_target_accumulation: 2,
+    rest_strength: 45, rest_accumulation: 45, is_primary: false,
+    notes: 'Rotational core work. Keep hips stable, rotate through torso, control the eccentric. Great cable-based core swap option.',
+  },
 
   // ─── ATHLETIC / POWER ────────────────────────────────────────────
   box_jump: {
@@ -600,7 +627,7 @@ export const BLOCK_ROTATIONS = {
     ez_bar_curl: 'barbell_curl',
     skull_crushers: 'close_grip_bench',
     lying_leg_curl: 'nordic_curl',
-    seated_leg_curl: 'ghr',
+    seated_leg_curl: 'standing_cable_leg_curl',
   },
 }
 
