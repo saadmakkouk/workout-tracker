@@ -503,6 +503,62 @@ export const EXERCISES = {
     rest_strength: 90, rest_accumulation: 90, is_primary: false,
     notes: 'ALWAYS second on Day 4 after box jumps. Horizontal power — transfers directly to sprint speed and soccer acceleration.',
   },
+
+  // ─── NEW ADDITIONS ───────────────────────────────────────────────
+  cable_woodchopper: {
+    id: 'cable_woodchopper', name: 'Cable Woodchopper',
+    muscle: 'core', pattern: 'core_rotation', tier: 3,
+    equipment: ['cables'],
+    sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '12-15',
+    rir_target_strength: 2, rir_target_accumulation: 2,
+    rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    notes: 'Rotational core power — directly transfers to soccer kicking and sprinting mechanics. Set cable high, chop diagonally across body. Both directions each set. Only rotational exercise in the programme.',
+  },
+  standing_cable_hamstring_curl: {
+    id: 'standing_cable_hamstring_curl', name: 'Standing Cable Hamstring Curl',
+    muscle: 'hamstrings', pattern: 'hamstring_isolation', tier: 3,
+    equipment: ['cables'],
+    sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '12-15',
+    rir_target_strength: 2, rir_target_accumulation: 2,
+    rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    notes: 'Ankle strap on low cable. Standing single leg hamstring curl. Different stimulus to lying/seated — trains hamstring in upright athletic position. Squeeze hard at top.',
+  },
+  single_leg_rdl: {
+    id: 'single_leg_rdl', name: 'Single Leg RDL',
+    muscle: 'hamstrings', pattern: 'hinge', tier: 2,
+    equipment: ['dumbbells'],
+    sets_default: 3, rep_range_strength: '8-10', rep_range_accumulation: '10-12',
+    rir_target_strength: 2, rir_target_accumulation: 2,
+    rest_strength: 75, rest_accumulation: 75, is_primary: false,
+    notes: 'Unilateral hinge — directly addresses left-right hamstring imbalance. Dumbbell in opposite hand to working leg. Hip hinge, feel full stretch. Per leg. Especially important given right hamstring history.',
+  },
+  dumbbell_lateral_raise: {
+    id: 'dumbbell_lateral_raise', name: 'Dumbbell Lateral Raise',
+    muscle: 'shoulders', pattern: 'lateral_raise', tier: 3,
+    equipment: ['dumbbells'],
+    sets_default: 3, rep_range_strength: '12-15', rep_range_accumulation: '15-20',
+    rir_target_strength: 2, rir_target_accumulation: 2,
+    rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    notes: 'Equipment alternative to cable lateral raise. Research shows identical hypertrophy outcomes. Use when cables are busy. Lean-in variation for better stretch at bottom.',
+  },
+  bayesian_curl: {
+    id: 'bayesian_curl', name: 'Bayesian Cable Curl',
+    muscle: 'biceps', pattern: 'curl', tier: 3,
+    equipment: ['cables'],
+    sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '12-15',
+    rir_target_strength: 2, rir_target_accumulation: 2,
+    rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    notes: 'Cable set behind you at hip height. Step forward, arm extended back. Maximum long head bicep stretch at bottom. Popularised by Menno Henselmans. Single arm, supinate fully at top.',
+  },
+  spider_curl: {
+    id: 'spider_curl', name: 'Spider Curl',
+    muscle: 'biceps', pattern: 'curl', tier: 3,
+    equipment: ['dumbbells', 'bench'],
+    sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '10-12',
+    rir_target_strength: 2, rir_target_accumulation: 2,
+    rest_strength: 60, rest_accumulation: 60, is_primary: false,
+    notes: 'Chest on incline bench, arms hanging straight down. Best short head bicep exercise at lengthened position. Constant tension throughout. Builds the bicep peak.',
+  },
 }
 
 // ─── PROGRAMME STRUCTURE ─────────────────────────────────────────
