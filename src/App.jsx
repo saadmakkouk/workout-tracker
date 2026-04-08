@@ -165,6 +165,7 @@ export default function App() {
       )}
       {screen === 'freestyle' && (
         <FreestyleScreen
+          allLogs={allLogs}
           onFinish={async (exercises, fatigueLevel, notes) => {
             const fakeWorkout = { dayType: 'freestyle', phase: 'freestyle', blockKey: 'freestyle', blockNumber: 0, sessionCount: sessions.length }
             await saveSession(fakeWorkout, exercises, fatigueLevel, notes)
