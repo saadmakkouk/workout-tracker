@@ -50,7 +50,7 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
               <div key={name} style={s.prCard}>
                 <div style={s.prCardHeader}>
                   <div style={s.prName}>{name}</div>
-                  <div style={s.prWeight}>{pr} kg</div>
+                  <div style={s.prWeight}>{pr} lbs</div>
                 </div>
                 <div style={s.prMeta}>
                   {ctx && (
@@ -78,7 +78,7 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
                       <div style={s.prName}>{name}</div>
                       {ctx && <div style={s.prDate}>{new Date(ctx.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}{ctx.phase ? ` · ${ctx.phase}` : ''}</div>}
                     </div>
-                    <div style={s.prWeight}>{pr} kg</div>
+                    <div style={s.prWeight}>{pr} lbs</div>
                   </div>
                 )
               })}
@@ -148,12 +148,12 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
           {bodyweightLog.length > 0 && (
             <>
               <div style={s.bwCard}>
-                <div style={s.bwCurrent}>{bodyweightLog[0].weight} kg</div>
+                <div style={s.bwCurrent}>{bodyweightLog[0].weight} lbs</div>
                 <div style={s.bwLabel}>Current</div>
                 {bodyweightLog.length > 1 && (
                   <div style={s.bwChange}>
                     {(bodyweightLog[0].weight - bodyweightLog[bodyweightLog.length - 1].weight) >= 0 ? '+' : ''}
-                    {(bodyweightLog[0].weight - bodyweightLog[bodyweightLog.length - 1].weight).toFixed(1)} kg since first entry
+                    {(bodyweightLog[0].weight - bodyweightLog[bodyweightLog.length - 1].weight).toFixed(1)} lbs since first entry
                   </div>
                 )}
               </div>
@@ -161,7 +161,7 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
               {bodyweightLog.map((entry, i) => (
                 <div key={i} style={s.bwRow}>
                   <span style={s.bwDate}>{new Date(entry.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
-                  <span style={s.bwVal}>{entry.weight} kg</span>
+                  <span style={s.bwVal}>{entry.weight} lbs</span>
                   {i < bodyweightLog.length - 1 && (
                     <span style={{ ...s.bwDiff, color: bodyweightLog[i].weight >= bodyweightLog[i+1].weight ? '#4ade80' : '#f87171' }}>
                       {(bodyweightLog[i].weight - bodyweightLog[i+1].weight) >= 0 ? '+' : ''}{(bodyweightLog[i].weight - bodyweightLog[i+1].weight).toFixed(1)}

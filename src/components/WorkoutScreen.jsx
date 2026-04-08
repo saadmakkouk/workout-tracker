@@ -214,7 +214,7 @@ export default function WorkoutScreen({ workout, availableEquipment, allLogs, ex
                   {warmupSets.map((ws, i) => (
                     <div key={i} style={s.warmupRow}>
                       <span style={s.warmupLabel}>{ws.label}</span>
-                      <span style={s.warmupVal}>{ws.weight} kg × {ws.reps}</span>
+                      <span style={s.warmupVal}>{ws.weight} lbs × {ws.reps}</span>
                     </div>
                   ))}
                 </div>
@@ -225,7 +225,7 @@ export default function WorkoutScreen({ workout, availableEquipment, allLogs, ex
           {/* Sets */}
           <div style={s.setsHeader}>
             <span style={{ ...s.setCol, flex: 0.5 }}>Set</span>
-            <span style={s.setCol}>Weight kg</span>
+            <span style={s.setCol}>Weight lbs</span>
             <span style={s.setCol}>Reps</span>
             <span style={s.setCol}>RIR</span>
           </div>

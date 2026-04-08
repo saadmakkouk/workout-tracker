@@ -54,7 +54,7 @@ export default function HomeScreen({ sessions, allLogs, bodyweightLog, fatigue, 
               <span style={{ ...s.pill, color: getPhaseColor(phase.phase) }}>{phase.label}</span>
               <span style={s.pill}>Wk {phase.week}</span>
             </div>
-            {latestBW && <div style={s.bwDisplay} onClick={() => setShowBWInput(true)}>{latestBW} kg ✏️</div>}
+            {latestBW && <div style={s.bwDisplay} onClick={() => setShowBWInput(true)}>{latestBW} lbs ✏️</div>}
             {!latestBW && <button style={s.bwBtn} onClick={() => setShowBWInput(true)}>+ Weight</button>}
           </div>
         </div>
@@ -63,7 +63,7 @@ export default function HomeScreen({ sessions, allLogs, bodyweightLog, fatigue, 
           <div style={s.bwInputRow}>
             <input
               style={s.bwInput} type="number" inputMode="decimal"
-              placeholder="Body weight kg" value={bwValue}
+              placeholder="Body weight lbs" value={bwValue}
               onChange={e => setBwValue(e.target.value)}
               autoFocus
             />
@@ -114,7 +114,7 @@ export default function HomeScreen({ sessions, allLogs, bodyweightLog, fatigue, 
       <div style={s.statsRow}>
         {[
           { val: sessionCount, label: 'Sessions' },
-          { val: weeklyVolume > 0 ? `${Math.round(weeklyVolume / 1000)}k` : '—', label: 'kg/Week' },
+          { val: weeklyVolume > 0 ? `${Math.round(weeklyVolume / 1000)}k` : '—', label: 'lbs/Week' },
           { val: Object.keys(prMap).length, label: 'Lifts' },
         ].map(st => (
           <div key={st.label} style={s.statBox} onClick={onStats}>
@@ -142,7 +142,7 @@ export default function HomeScreen({ sessions, allLogs, bodyweightLog, fatigue, 
                   <div style={s.prName}>{lift.label}</div>
                   {ctx && <div style={s.prDate}>{new Date(ctx.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}</div>}
                 </div>
-                <span style={s.prWeight}>{pr} kg</span>
+                <span style={s.prWeight}>{pr} lbs</span>
               </div>
             )
           })}

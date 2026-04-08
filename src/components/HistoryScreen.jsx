@@ -52,7 +52,7 @@ export default function HistoryScreen({ sessions, allLogs, onBack }) {
                     <div style={s.cardMeta}>
                       {session.phase && <span style={{ ...s.metaTag, color: PHASE_COLORS[session.phase] || '#888' }}>{session.phase}</span>}
                       {session.block_number && session.day_type !== 'freestyle' && <span style={s.metaTag}>Block {session.block_number}</span>}
-                      {totalVol > 0 && <span style={s.metaTag}>{Math.round(totalVol)}kg vol</span>}
+                      {totalVol > 0 && <span style={s.metaTag}>{Math.round(totalVol)}lbs vol</span>}
                       <span style={{ ...s.metaTag, color: getFatigueColor(session.fatigue_level) }}>F{session.fatigue_level}/5</span>
                     </div>
                   </div>
