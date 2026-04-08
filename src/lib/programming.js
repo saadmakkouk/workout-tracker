@@ -399,14 +399,19 @@ export function getProgressStats(allLogs) {
   allLogs.forEach(log => {
     try {
       const sets = typeof log.sets === 'string' ? JSON.parse(log.sets) : log.sets || []
-      const maxWeight = Math.max(...sets.map(s => parseFloat(s.weight) || 0))
-      const maxReps = Math.max(...sets.map(s => parseInt(s.reps) || 0))
+      // Find the best set — highest weight, and reps from THAT same set
+      const bestSet = sets.reduce((best, s) => {
+        const w = parseFloat(s.weight) || 0
+        return w > (parseFloat(best?.weight) || 0) ? s : best
+      }, sets[0])
+      const maxWeight = parseFloat(bestSet?.weight) || 0
+      const prReps = parseInt(bestSet?.reps) || 0
 
       if (!prMap[log.exercise_name] || maxWeight > prMap[log.exercise_name]) {
         prMap[log.exercise_name] = maxWeight
         prContext[log.exercise_name] = {
           weight: maxWeight,
-          reps: maxReps,
+          reps: prReps,
           date: log.created_at,
           sessionId: log.session_id,
           phase: log.phase,

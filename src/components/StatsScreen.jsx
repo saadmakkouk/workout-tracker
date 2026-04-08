@@ -50,7 +50,10 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
               <div key={name} style={s.prCard}>
                 <div style={s.prCardHeader}>
                   <div style={s.prName}>{name}</div>
-                  <div style={s.prWeight}>{pr} lbs</div>
+                  <div>
+                    <div style={s.prWeight}>{pr} lbs</div>
+                    {ctx?.reps > 0 && <div style={s.prOneRM}>~{Math.round(pr * (1 + ctx.reps / 30))} lbs 1RM</div>}
+                  </div>
                 </div>
                 <div style={s.prMeta}>
                   {ctx && (
@@ -106,11 +109,11 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
                 <div key={name} style={s.progressRow}>
                   <div style={s.progressName}>{name.replace('Barbell ', '').replace('Conventional ', '')}</div>
                   <div style={s.progressData}>
-                    <span style={s.progressStart}>{data.start}kg</span>
+                    <span style={s.progressStart}>{data.start} lbs</span>
                     <span style={s.progressArrow}>→</span>
-                    <span style={s.progressEnd}>{data.end}kg</span>
+                    <span style={s.progressEnd}>{data.end} lbs</span>
                     <span style={{ ...s.progressGain, color: data.gain >= 0 ? '#4ade80' : '#f87171' }}>
-                      {data.gain >= 0 ? '+' : ''}{data.gain}kg
+                      {data.gain >= 0 ? '+' : ''}{data.gain} lbs
                     </span>
                   </div>
                 </div>
@@ -201,6 +204,7 @@ const s = {
   prDate: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#444', marginTop: 2 },
   prEmpty: { fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#333' },
   prWeight: { fontFamily: "'DM Mono', monospace", fontSize: 16, color: '#e8ff00', fontWeight: 500 },
+  prOneRM: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#666', marginTop: 2, textAlign: 'right' },
   prMeta: { display: 'flex', flexWrap: 'wrap', gap: 8 },
   prMetaItem: { fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#666' },
   empty: { textAlign: 'center', color: '#333', fontFamily: "'DM Mono', monospace", fontSize: 12, marginTop: 60 },

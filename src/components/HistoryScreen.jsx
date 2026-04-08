@@ -80,11 +80,11 @@ export default function HistoryScreen({ sessions, allLogs, onBack }) {
                         </div>
                         <div style={s.logSets}>
                           {sets.map((set, si) => (
-                            <span key={si} style={s.setChip}>{set.weight}kg×{set.reps}</span>
+                            <span key={si} style={s.setChip}>{set.weight} lbs×{set.reps}</span>
                           ))}
                         </div>
                         <div style={s.logStats}>
-                          <span style={s.logStat}>Top: {maxW}kg</span>
+                          <span style={s.logStat}>Top: {maxW} lbs</span>
                           <span style={s.logStat}>Reps: {totalReps}</span>
                         </div>
                       </div>
