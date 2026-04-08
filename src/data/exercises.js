@@ -469,7 +469,7 @@ export const EXERCISES = {
     id: 'standing_calf_raise', name: 'Standing Calf Raise',
     muscle: 'calves', pattern: 'calf_raise', tier: 3,
     equipment: ['machines'],
-    sets_default: 3, rep_range_strength: '10-12', rep_range_accumulation: '10-12',
+    sets_default: 4, rep_range_strength: '10-12', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
     quality_score: 8,
@@ -479,7 +479,7 @@ export const EXERCISES = {
     id: 'seated_calf_raise', name: 'Seated Calf Raise',
     muscle: 'calves', pattern: 'calf_raise', tier: 3,
     equipment: ['machines'],
-    sets_default: 3, rep_range_strength: '12-15', rep_range_accumulation: '12-15',
+    sets_default: 4, rep_range_strength: '12-15', rep_range_accumulation: '12-15',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 60, rest_accumulation: 60, is_primary: false,
     quality_score: 8,
@@ -713,16 +713,16 @@ export const EXERCISES = {
 export const PROGRAMME = {
   day1: {
     id: 'day1', label: 'Upper — Strength', focus: 'Bench & Row',
-    description: 'Two primary benchmarks. Everything else supports them. Heavy, focused, purposeful.',
+    description: 'Four primary compounds. Face pull for shoulder health. Arms fresh after compounds.',
     color: '#e8ff00',
     order: [
       { exerciseId: 'flat_barbell_bench', isPrimary: true },
       { exerciseId: 'barbell_row', isPrimary: true },
       { exerciseId: 'incline_barbell_bench', isPrimary: false },
       { exerciseId: 'weighted_pullup', isPrimary: false },
-      { exerciseId: 'skull_crushers', isPrimary: false },
-      { exerciseId: 'ez_bar_curl', isPrimary: false },
       { exerciseId: 'face_pull', isPrimary: false },
+      { exerciseId: 'ez_bar_curl', isPrimary: false },
+      { exerciseId: 'skull_crushers', isPrimary: false },
     ]
   },
   day2: {
@@ -737,11 +737,12 @@ export const PROGRAMME = {
       { exerciseId: 'standing_calf_raise', isPrimary: false },
       { exerciseId: 'cable_pull_through', isPrimary: false },
       { exerciseId: 'ab_wheel', isPrimary: false },
+      { exerciseId: 'hanging_leg_raise', isPrimary: false },
     ]
   },
   day3: {
     id: 'day3', label: 'Upper — Volume', focus: 'Overhead Press',
-    description: 'OHP is the star. Volume and hypertrophy for chest, back and arms.',
+    description: 'OHP leads. Volume and hypertrophy for every upper body muscle. Quality over quantity.',
     color: '#60a5fa',
     order: [
       { exerciseId: 'barbell_ohp', isPrimary: true },
@@ -749,18 +750,14 @@ export const PROGRAMME = {
       { exerciseId: 'incline_dumbbell_press', isPrimary: false },
       { exerciseId: 'cable_row', isPrimary: false },
       { exerciseId: 'lat_prayer', isPrimary: false },
-      { exerciseId: 'pec_deck_fly', isPrimary: false },
-      { exerciseId: 'rear_delt_pec_deck', isPrimary: false },
       { exerciseId: 'cable_lateral_raise', isPrimary: false },
       { exerciseId: 'overhead_cable_extension', isPrimary: false },
       { exerciseId: 'bayesian_curl', isPrimary: false },
-      { exerciseId: 'tricep_pushdown', isPrimary: false },
-      { exerciseId: 'reverse_hyper', isPrimary: false },
     ]
   },
   day4: {
     id: 'day4', label: 'Lower — Athletic', focus: 'Deadlift & Power',
-    description: 'Athletic work FIRST when CNS is fresh. Deadlift second. Volume and posterior chain after.',
+    description: 'Power work FIRST when CNS is fresh. Deadlift second. Posterior chain after.',
     color: '#f97316',
     order: [
       { exerciseId: 'box_jump', isPrimary: false },
@@ -768,17 +765,13 @@ export const PROGRAMME = {
       { exerciseId: 'conventional_deadlift', isPrimary: true },
       { exerciseId: 'hack_squat', isPrimary: false },
       { exerciseId: 'hip_thrust', isPrimary: false },
-      { exerciseId: 'leg_extension', isPrimary: false },
-      { exerciseId: 'seated_leg_curl', isPrimary: false },
       { exerciseId: 'nordic_curl', isPrimary: false },
-      { exerciseId: 'cable_pull_through', isPrimary: false },
-      { exerciseId: 'back_extension', isPrimary: false },
+      { exerciseId: 'seated_leg_curl', isPrimary: false },
       { exerciseId: 'seated_calf_raise', isPrimary: false },
-      { exerciseId: 'cable_woodchopper', isPrimary: false },
-      { exerciseId: 'hanging_leg_raise', isPrimary: false },
     ]
-  },
+  }
 }
+
 
 export const BLOCK_ROTATIONS = {
   block1: {
