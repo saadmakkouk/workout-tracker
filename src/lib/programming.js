@@ -340,8 +340,16 @@ export function swapExercise(currentExercise, availableEquipment, currentExercis
     (ex.equipment.length === 0 || ex.equipment.every(eq => availableEquipment.includes(eq)))
   )
   if (candidates.length === 0) return null
-  const fresh = candidates.filter(ex => !recentNames.includes(ex.name))
-  return (fresh.length > 0 ? fresh : candidates)[0]
+
+  // Sort by quality score descending — best evidence-based exercise first
+  // Prefer exercises not recently done, but quality score wins
+  const scored = candidates.map(ex => {
+    let score = (ex.quality_score ?? 5) * 5
+    if (recentNames.includes(ex.name)) score -= 10
+    return { ex, score }
+  })
+  scored.sort((a, b) => b.score - a.score)
+  return scored[0].ex
 }
 
 // ─── FATIGUE ANALYSIS ────────────────────────────────────────────
