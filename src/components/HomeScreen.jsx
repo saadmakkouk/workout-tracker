@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getProgressStats, getWeeklyVolume, getCurrentPhase, getCurrentBlock, getDayType, getWeekSchedule, getBlockNumber } from '../lib/programming.js'
+import { getProgressStats, getWeeklyVolume, getCurrentPhase, getCurrentBlock, getDayType, getNextDayType, getWeekSchedule, getBlockNumber } from '../lib/programming.js'
 import { PROGRAMME, EXERCISES } from '../data/exercises.js'
 
 const DAY_COLORS = { day1: '#e8ff00', day2: '#4ade80', day3: '#60a5fa', day4: '#f97316', freestyle: '#7c3aed' }
@@ -11,12 +11,16 @@ export default function HomeScreen({ sessions, allLogs, bodyweightLog, fatigue, 
   const { prMap, prContext } = getProgressStats(allLogs)
   const weeklyVolume = getWeeklyVolume(sessions, allLogs)
   const lastSession = sessions[0]
-  const daysSinceLast = lastSession ? Math.floor((new Date() - new Date(lastSession.date)) / 86400000) : null
+  const daysSinceLast = lastSession ? (() => {
+    const today = new Date(); today.setHours(0,0,0,0)
+    const last = new Date(lastSession.date); last.setHours(0,0,0,0)
+    return Math.round((today - last) / 86400000)
+  })() : null
 
   const phase = getCurrentPhase(sessionCount)
   const blockKey = getCurrentBlock(sessionCount)
   const blockNum = getBlockNumber(sessionCount)
-  const dayType = getDayType(sessionCount)
+  const dayType = getNextDayType(sessions)
   const nextDay = PROGRAMME[dayType]
   const weekSchedule = getWeekSchedule(sessionCount)
   const dayColor = DAY_COLORS[dayType] || '#e8ff00'

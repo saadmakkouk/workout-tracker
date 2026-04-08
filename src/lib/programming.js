@@ -21,6 +21,35 @@ export function getDayType(sessionCount) {
   return ['day1', 'day2', 'day3', 'day4'][sessionCount % 4]
 }
 
+// Get next day type based on what's missing in current cycle
+export function getNextDayType(sessions) {
+  if (!sessions || sessions.length === 0) return 'day1'
+  const days = ['day1', 'day2', 'day3', 'day4']
+  const programmed = sessions.filter(s => days.includes(s.day_type))
+  if (programmed.length === 0) return 'day1'
+
+  // Figure out current cycle — group sessions into cycles of 4
+  // Count how many complete cycles of all 4 days have been done
+  // Then find which days are missing in the current incomplete cycle
+  const totalProgrammed = programmed.length
+  const completedFullCycles = Math.floor(totalProgrammed / 4)
+
+  // Sessions in current cycle (most recent incomplete cycle)
+  const currentCycleSessions = programmed.slice(0, totalProgrammed - (completedFullCycles * 4))
+  const doneInCurrentCycle = currentCycleSessions.map(s => s.day_type)
+
+  // Find first missing day in order
+  const missing = days.filter(d => !doneInCurrentCycle.includes(d))
+
+  if (missing.length === 0) {
+    // All 4 done — start next cycle from day1
+    return 'day1'
+  }
+
+  // Return the first missing day in order
+  return missing[0]
+}
+
 export function getBlockNumber(sessionCount) {
   return Math.floor(sessionCount / 28) + 1
 }

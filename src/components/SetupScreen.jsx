@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { EQUIPMENT_OPTIONS, GYM_PRESETS, PROGRAMME } from '../data/exercises.js'
-import { generateWorkout, getDayType, getCurrentPhase, getCurrentBlock, getReadinessMultiplier, checkConsecutiveDays } from '../lib/programming.js'
+import { generateWorkout, getDayType, getNextDayType, getCurrentPhase, getCurrentBlock, getReadinessMultiplier, checkConsecutiveDays } from '../lib/programming.js'
 
 const DAY_OPTIONS = [
   { id: 'day1', label: 'Upper — Strength', focus: 'Bench & Row', color: '#e8ff00' },
@@ -18,7 +18,7 @@ export default function SetupScreen({ sessionCount, allLogs, recentSessions, onS
   const [consecutiveWarning, setConsecutiveWarning] = useState(null)
 
   const phase = getCurrentPhase(sessionCount)
-  const suggestedDay = getDayType(sessionCount)
+  const suggestedDay = getNextDayType(recentSessions)
 
   function selectDay(dayId) {
     const warning = checkConsecutiveDays(dayId, recentSessions)
