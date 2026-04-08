@@ -24,21 +24,33 @@ export default function App() {
   async function loadData() {
     setLoading(true)
     try {
-      const [{ data: sessionData }, { data: logData }, { data: bwData }] = await Promise.all([
-        supabase.from('sessions').select('*').order('date', { ascending: false }).limit(100),
-        supabase.from('logs').select('*').order('created_at', { ascending: false }).limit(1000),
-        supabase.from('bodyweight').select('*').order('date', { ascending: false }).limit(60).catch(() => ({ data: [] })),
-      ])
-      setSessions(sessionData || [])
-      setAllLogs(logData || [])
-      setBodyweightLog(bwData || [])
-      setFatigue(analyzeFatigue(sessionData || []))
+      // Load each table separately so one failure doesn't kill everything
+      const { data: sessionData, error: sessionError } = await supabase
+        .from('sessions').select('*').order('date', { ascending: false }).limit(100)
+      if (sessionError) console.error('Sessions error:', sessionError)
 
-      // Load exercise notes from localStorage as lightweight persistent store
+      const { data: logData, error: logError } = await supabase
+        .from('logs').select('*').order('created_at', { ascending: false }).limit(1000)
+      if (logError) console.error('Logs error:', logError)
+
+      const { data: bwData, error: bwError } = await supabase
+        .from('bodyweight').select('*').order('date', { ascending: false }).limit(60)
+      if (bwError) console.error('Bodyweight error:', bwError)
+
+      const s = sessionData || []
+      const l = logData || []
+      const b = bwData || []
+
+      setSessions(s)
+      setAllLogs(l)
+      setBodyweightLog(b)
+      setFatigue(analyzeFatigue(s))
+
       try {
         const savedNotes = JSON.parse(localStorage.getItem('lift_exercise_notes') || '{}')
         setExerciseNotes(savedNotes)
       } catch {}
+
     } catch (err) {
       console.error('Load error:', err)
     }
@@ -82,7 +94,10 @@ export default function App() {
           block_key: workout.blockKey,
         }))
 
-      if (logsToInsert.length > 0) await supabase.from('logs').insert(logsToInsert)
+      if (logsToInsert.length > 0) {
+        const { error: logError } = await supabase.from('logs').insert(logsToInsert)
+        if (logError) console.error('Log insert error:', logError)
+      }
 
       await loadData()
       setScreen('home')
@@ -95,7 +110,10 @@ export default function App() {
 
   async function saveBodyweight(weight) {
     try {
-      await supabase.from('bodyweight').insert({ weight: parseFloat(weight), date: new Date().toISOString() })
+      const { error } = await supabase
+        .from('bodyweight')
+        .insert({ weight: parseFloat(weight), date: new Date().toISOString() })
+      if (error) throw error
       await loadData()
     } catch (err) {
       console.error('BW save error:', err)
