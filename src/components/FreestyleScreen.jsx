@@ -12,7 +12,7 @@ const MUSCLE_TARGETS = [
   { id: 'chest', label: 'Chest', icon: '🏋️', muscle: 'chest', patterns: ['horizontal_press', 'incline_press', 'chest_isolation', 'dip'] },
   { id: 'lats', label: 'Lats', icon: '🦅', muscle: 'back', patterns: ['vertical_pull', 'lat_isolation'] },
   { id: 'upper_back', label: 'Upper Back', icon: '🔝', muscle: 'back', patterns: ['horizontal_pull'] },
-  { id: 'core', label: 'Core / Abs', icon: '⚡', muscle: 'core', patterns: ['core', 'core_flexion', 'core_stability', 'core_rotation'] },
+  { id: 'core', label: 'Core / Abs', icon: '⚡', muscle: 'core', patterns: ['core'] },
   { id: 'quads', label: 'Quads', icon: '🦵', muscle: 'quads', patterns: ['squat', 'quad_isolation'] },
   { id: 'hamstrings', label: 'Hamstrings', icon: '🦵', muscle: 'hamstrings', patterns: ['hinge', 'hamstring_isolation', 'hamstring_eccentric'] },
   { id: 'glutes', label: 'Glutes', icon: '🍑', muscle: 'glutes', patterns: ['hip_thrust', 'glute_hinge'] },
@@ -26,21 +26,21 @@ function generateSmartSession(selectedTargets, availableEquipment) {
   const usedIds = []
 
   selectedTargets.forEach(target => {
-    // Find best exercises for this target
+    // Find best exercises for this target — pattern match is strict
+    // If patterns are specified, ONLY match on pattern (not general muscle)
+    // This ensures side delts only gets lateral raises, not OHP
     const candidates = Object.values(EXERCISES).filter(ex => {
-      const muscleMatch = ex.muscle === target.muscle
-      const patternMatch = target.patterns.some(p => ex.pattern === p || ex.pattern?.startsWith(p))
+      const patternMatch = target.patterns.some(p => ex.pattern === p)
       const hasEquipment = ex.equipment.length === 0 ||
         ex.equipment.every(eq => availableEquipment.includes(eq))
       const notUsed = !usedIds.includes(ex.id)
-      return (muscleMatch || patternMatch) && hasEquipment && notUsed
+      return patternMatch && hasEquipment && notUsed
     }).sort((a, b) => (b.quality_score || 5) - (a.quality_score || 5))
 
-    // Pick top 2 exercises per muscle target, avoid pattern duplicates
+    // Pick top 2 exercises per muscle target
     let added = 0
     for (const ex of candidates) {
       if (added >= 2) break
-      if (usedPatterns.filter(p => p === ex.pattern).length >= 1) continue
 
       exercises.push({
         id: `${ex.id}_${Date.now()}_${Math.random().toString(36).substr(2,4)}`,
