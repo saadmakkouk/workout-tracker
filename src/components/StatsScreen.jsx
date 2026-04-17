@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getProgressStats, getBlockSummary, getCurrentBlock } from '../lib/programming.js'
+import { getProgressStats, getBlockSummary, getCurrentBlock, getWeeklyVolume } from '../lib/programming.js'
 import { EXERCISES } from '../data/exercises.js'
 
 const PHASE_COLORS = { accumulation: '#4ade80', intensification: '#e8ff00', deload: '#60a5fa', freestyle: '#7c3aed' }
@@ -8,6 +8,52 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
   const [tab, setTab] = useState('prs') // prs | blocks | bodyweight
 
   const { prMap, prContext } = getProgressStats(allLogs)
+
+  // Weekly sets per muscle
+  const PROGRAMME_MUSCLES = {
+    chest: 10, back: 17, shoulders: 10, quads: 11,
+    hamstrings: 16, glutes: 6, biceps: 6, triceps: 6,
+    calves: 8, core: 6, lower_back: 6
+  }
+
+  // Weekly volume by week
+  function getWeeklyVolumeHistory() {
+    if (!sessions || sessions.length === 0) return []
+    const weeks = []
+    const sorted = [...sessions].sort((a, b) => new Date(a.date) - new Date(b.date))
+    let weekStart = new Date(sorted[0].date)
+    weekStart.setHours(0,0,0,0)
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay())
+    
+    for (let i = 0; i < 12; i++) {
+      const weekEnd = new Date(weekStart)
+      weekEnd.setDate(weekEnd.getDate() + 7)
+      const weekSessions = sorted.filter(s => {
+        const d = new Date(s.date)
+        return d >= weekStart && d < weekEnd
+      })
+      const weekIds = weekSessions.map(s => s.id)
+      const weekLogs = allLogs.filter(l => weekIds.includes(l.session_id))
+      const vol = weekLogs.reduce((acc, log) => {
+        try {
+          const sets = typeof log.sets === 'string' ? JSON.parse(log.sets) : log.sets || []
+          return acc + sets.reduce((a, s) => a + (parseFloat(s.weight)||0) * (parseInt(s.reps)||0), 0)
+        } catch { return acc }
+      }, 0)
+      if (weekSessions.length > 0 || weeks.length > 0) {
+        weeks.push({
+          label: weekStart.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+          volume: Math.round(vol),
+          sessions: weekSessions.length
+        })
+      }
+      weekStart = new Date(weekEnd)
+    }
+    return weeks.slice(-8)
+  }
+
+  const weeklyHistory = getWeeklyVolumeHistory()
+  const maxVol = Math.max(...weeklyHistory.map(w => w.volume), 1)
   const sessionCount = sessions.length
 
   // Get block summaries for last 2 blocks
@@ -29,7 +75,7 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
       </div>
 
       <div style={s.tabs}>
-        {[['prs', 'Personal Bests'], ['blocks', 'Block Summary'], ['bodyweight', 'Bodyweight']].map(([id, label]) => (
+        {[['prs', 'Personal Bests'], ['blocks', 'Block Summary'], ['volume', 'Volume'], ['bodyweight', 'Bodyweight']].map(([id, label]) => (
           <button key={id} style={{ ...s.tab, ...(tab === id ? s.tabActive : {}) }} onClick={() => setTab(id)}>{label}</button>
         ))}
       </div>
@@ -136,6 +182,54 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
                   {session.phase && <span style={{ ...s.phasePill, color: PHASE_COLORS[session.phase] || '#888' }}>{session.phase}</span>}
                   <span style={s.sessionEx}>{logs.length} ex</span>
                   <div style={{ width: 7, height: 7, borderRadius: '50%', background: getFatigueColor(session.fatigue_level) }} />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {tab === 'volume' && (
+        <div style={s.content}>
+          <div style={s.sectionTitle}>WEEKLY VOLUME (LBS LIFTED)</div>
+          {weeklyHistory.length === 0 && <div style={s.empty}>No data yet. Start logging sessions!</div>}
+          {weeklyHistory.map((week, i) => (
+            <div key={i} style={{ marginBottom: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#888' }}>{week.label}</span>
+                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#e8ff00' }}>
+                  {week.volume > 0 ? `${Math.round(week.volume/1000)}k lbs` : '—'} · {week.sessions} sessions
+                </span>
+              </div>
+              <div style={{ height: 8, background: '#161616', borderRadius: 4, overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%',
+                  width: `${week.volume > 0 ? (week.volume / maxVol) * 100 : 0}%`,
+                  background: week.volume > 0 ? '#e8ff00' : '#222',
+                  borderRadius: 4,
+                  transition: 'width 0.4s ease'
+                }} />
+              </div>
+            </div>
+          ))}
+
+          <div style={{ ...s.sectionTitle, marginTop: 28 }}>WEEKLY SETS PER MUSCLE</div>
+          <div style={{ fontSize: 11, fontFamily: "'DM Mono', monospace", color: '#444', marginBottom: 12 }}>Based on programme design</div>
+          {Object.entries(PROGRAMME_MUSCLES).map(([muscle, sets]) => {
+            const low = muscle === 'calves' ? 8 : muscle === 'lower_back' ? 4 : muscle === 'glutes' ? 6 : muscle === 'biceps' || muscle === 'triceps' || muscle === 'core' ? 6 : 10
+            const high = muscle === 'back' ? 20 : muscle === 'hamstrings' ? 20 : 20
+            const pct = (sets / 20) * 100
+            const color = sets >= low ? '#4ade80' : '#f87171'
+            return (
+              <div key={muscle} style={{ marginBottom: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#888', textTransform: 'capitalize' }}>{muscle.replace('_',' ')}</span>
+                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color }}>
+                    {sets} sets/wk
+                  </span>
+                </div>
+                <div style={{ height: 6, background: '#161616', borderRadius: 4, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 4 }} />
                 </div>
               </div>
             )

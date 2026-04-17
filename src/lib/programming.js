@@ -208,14 +208,26 @@ export function generateWorkout(sessionCount, dayType, availableEquipment, allLo
 
   const usedExercises = []
 
-  const exercises = dayProgramme.order.map(slot => {
+  // Apply A/B/C priority filtering based on readiness
+  const readinessMultiplier = readinessData?.multiplier || 1.0
+  const filteredOrder = dayProgramme.order.filter(slot => {
+    const priority = slot.priority || 'B'
+    if (readinessMultiplier <= 0.90) return priority !== 'C' // rough — drop C
+    if (readinessMultiplier <= 0.95) return true // slightly off — keep all but reduce C sets
+    return true // normal/great — full session
+  })
+
+  const exercises = filteredOrder.map(slot => {
     const exercise = resolveExercise(slot.exerciseId, blockKey, availableEquipment, usedExercises, slot)
     if (!exercise) return null
 
     usedExercises.push(exercise)
 
-    const targetData = calculateTarget(exercise, phase, allLogs, readinessData?.multiplier || 1.0)
-    const sets = buildSets(exercise, phase, targetData)
+    // On slightly off days reduce C slot sets by 1
+    const setsReduction = (readinessMultiplier <= 0.95 && readinessMultiplier > 0.90 && slot.priority === 'C') ? 1 : 0
+
+    const targetData = calculateTarget(exercise, phase, allLogs, readinessMultiplier)
+    const sets = buildSets(exercise, phase, targetData, setsReduction)
 
     return {
       id: `${exercise.id}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
@@ -224,6 +236,7 @@ export function generateWorkout(sessionCount, dayType, availableEquipment, allLo
       muscle: exercise.muscle,
       pattern: exercise.pattern,
       isPrimary: slot.isPrimary,
+      priority: slot.priority || 'B',
       sets,
       repRange: phase.phase === 'accumulation'
         ? exercise.rep_range_accumulation
@@ -303,8 +316,9 @@ function getIncrement(weight, isPrimary) {
   return weight < 60 ? 1.25 : 2.5
 }
 
-function buildSets(exercise, phase, targetData) {
-  return Array(exercise.sets_default).fill(null).map((_, i) => ({
+function buildSets(exercise, phase, targetData, setsReduction = 0) {
+  const totalSets = Math.max(1, exercise.sets_default - setsReduction)
+  return Array(totalSets).fill(null).map((_, i) => ({
     setNumber: i + 1, weight: targetData.weight || '', reps: '', rir: '', completed: false,
   }))
 }

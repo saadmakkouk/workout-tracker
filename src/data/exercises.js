@@ -196,7 +196,7 @@ export const EXERCISES = {
   chest_supported_row: {
     id: 'chest_supported_row', name: 'Chest Supported Row',
     muscle: 'back', pattern: 'horizontal_pull', tier: 2,
-    equipment: ['dumbbells', 'bench'],
+    equipment: ['bench'],
     sets_default: 4, rep_range_strength: '8-10', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 90, rest_accumulation: 75, is_primary: false,
@@ -530,7 +530,7 @@ export const EXERCISES = {
   preacher_curl: {
     id: 'preacher_curl', name: 'Preacher Curl',
     muscle: 'biceps', pattern: 'curl', tier: 3,
-    equipment: ['barbell', 'bench'],
+    equipment: ['dumbbells', 'bench'],
     sets_default: 3, rep_range_strength: '8-10', rep_range_accumulation: '10-12',
     rir_target_strength: 2, rir_target_accumulation: 2,
     rest_strength: 75, rest_accumulation: 60, is_primary: false,
@@ -713,65 +713,57 @@ export const EXERCISES = {
 export const PROGRAMME = {
   day1: {
     id: 'day1', label: 'Upper — Strength', focus: 'Bench & Row',
-    description: 'Four primary compounds. Face pull for shoulder health. Arms fresh after compounds.',
+    description: 'Two primary benchmarks. Incline and pull-up support them. Arms and shoulder health to finish.',
     color: '#e8ff00',
     order: [
-      { exerciseId: 'flat_barbell_bench', isPrimary: true },
-      { exerciseId: 'barbell_row', isPrimary: true },
-      { exerciseId: 'incline_barbell_bench', isPrimary: false },
-      { exerciseId: 'weighted_pullup', isPrimary: false },
-      { exerciseId: 'face_pull', isPrimary: false },
-      { exerciseId: 'ez_bar_curl', isPrimary: false },
-      { exerciseId: 'skull_crushers', isPrimary: false },
+      { exerciseId: 'flat_barbell_bench', isPrimary: true, priority: 'A' },
+      { exerciseId: 'barbell_row', isPrimary: true, priority: 'A' },
+      { exerciseId: 'incline_barbell_bench', isPrimary: false, priority: 'B' },
+      { exerciseId: 'weighted_pullup', isPrimary: false, priority: 'B' },
+      { exerciseId: 'face_pull', isPrimary: false, priority: 'C' },
+      { exerciseId: 'ez_bar_curl', isPrimary: false, priority: 'C' },
+      { exerciseId: 'skull_crushers', isPrimary: false, priority: 'C' },
     ]
   },
   day2: {
     id: 'day2', label: 'Lower — Strength', focus: 'Squat',
-    description: 'Squat owns this day. Everything else supports it.',
+    description: 'Squat and RDL own this day. Nordic for hamstring resilience. Calves and core to finish.',
     color: '#4ade80',
     order: [
-      { exerciseId: 'back_squat', isPrimary: true },
-      { exerciseId: 'rdl', isPrimary: false },
-      { exerciseId: 'leg_press', isPrimary: false },
-      { exerciseId: 'nordic_curl', isPrimary: false },
-      { exerciseId: 'standing_calf_raise', isPrimary: false },
-      { exerciseId: 'cable_pull_through', isPrimary: false },
-      { exerciseId: 'ab_wheel', isPrimary: false },
-      { exerciseId: 'hanging_leg_raise', isPrimary: false },
+      { exerciseId: 'back_squat', isPrimary: true, priority: 'A' },
+      { exerciseId: 'rdl', isPrimary: false, priority: 'A' },
+      { exerciseId: 'nordic_curl', isPrimary: false, priority: 'B' },
+      { exerciseId: 'standing_calf_raise', isPrimary: false, priority: 'B' },
+      { exerciseId: 'ab_wheel', isPrimary: false, priority: 'C' },
     ]
   },
   day3: {
     id: 'day3', label: 'Upper — Volume', focus: 'Overhead Press',
-    description: 'OHP leads. Volume and hypertrophy for every upper body muscle. Quality over quantity.',
+    description: 'OHP leads. Full lat coverage with pulldown and prayer. Shoulders and arms to finish.',
     color: '#60a5fa',
     order: [
-      { exerciseId: 'barbell_ohp', isPrimary: true },
-      { exerciseId: 'lat_pulldown', isPrimary: false },
-      { exerciseId: 'incline_dumbbell_press', isPrimary: false },
-      { exerciseId: 'cable_row', isPrimary: false },
-      { exerciseId: 'lat_prayer', isPrimary: false },
-      { exerciseId: 'cable_lateral_raise', isPrimary: false },
-      { exerciseId: 'overhead_cable_extension', isPrimary: false },
-      { exerciseId: 'bayesian_curl', isPrimary: false },
+      { exerciseId: 'barbell_ohp', isPrimary: true, priority: 'A' },
+      { exerciseId: 'lat_pulldown', isPrimary: false, priority: 'B' },
+      { exerciseId: 'incline_dumbbell_press', isPrimary: false, priority: 'B' },
+      { exerciseId: 'lat_prayer', isPrimary: false, priority: 'B' },
+      { exerciseId: 'cable_lateral_raise', isPrimary: false, priority: 'C' },
+      { exerciseId: 'bayesian_curl', isPrimary: false, priority: 'C' },
     ]
   },
   day4: {
     id: 'day4', label: 'Lower — Athletic', focus: 'Deadlift & Power',
-    description: 'Power work FIRST when CNS is fresh. Deadlift second. Posterior chain after.',
+    description: 'Power first when CNS is fresh. Deadlift second. Quad and glute accessories. Nordic last.',
     color: '#f97316',
     order: [
-      { exerciseId: 'box_jump', isPrimary: false },
-      { exerciseId: 'broad_jump', isPrimary: false },
-      { exerciseId: 'conventional_deadlift', isPrimary: true },
-      { exerciseId: 'hack_squat', isPrimary: false },
-      { exerciseId: 'hip_thrust', isPrimary: false },
-      { exerciseId: 'nordic_curl', isPrimary: false },
-      { exerciseId: 'seated_leg_curl', isPrimary: false },
-      { exerciseId: 'seated_calf_raise', isPrimary: false },
+      { exerciseId: 'box_jump', isPrimary: false, priority: 'A' },
+      { exerciseId: 'broad_jump', isPrimary: false, priority: 'A' },
+      { exerciseId: 'conventional_deadlift', isPrimary: true, priority: 'A' },
+      { exerciseId: 'hack_squat', isPrimary: false, priority: 'B' },
+      { exerciseId: 'hip_thrust', isPrimary: false, priority: 'B' },
+      { exerciseId: 'nordic_curl', isPrimary: false, priority: 'C' },
     ]
-  }
+  },
 }
-
 
 export const BLOCK_ROTATIONS = {
   block1: {

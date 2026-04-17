@@ -13,6 +13,8 @@ export default function WorkoutScreen({ workout, availableEquipment, allLogs, ex
   const [restRemaining, setRestRemaining] = useState(null)
   const [showWarmup, setShowWarmup] = useState(false)
   const [showExNote, setShowExNote] = useState(false)
+  const [showAddPicker, setShowAddPicker] = useState(false)
+  const [filterMuscle, setFilterMuscle] = useState('all')
   const [exNoteText, setExNoteText] = useState('')
   const timerRef = useRef(null)
 
@@ -86,6 +88,31 @@ export default function WorkoutScreen({ workout, availableEquipment, allLogs, ex
       return updated
     })
     setTimeout(() => setSwapping(null), 800)
+  }
+
+  function removeExercise(exIdx) {
+    if (exercises.length <= 1) return
+    const newExercises = exercises.filter((_, i) => i !== exIdx)
+    setExercises(newExercises)
+    setActiveIdx(Math.min(activeIdx, newExercises.length - 1))
+  }
+
+  function addExerciseToSession(ex) {
+    const newEx = {
+      id: `${ex.id}_${Date.now()}_${Math.random().toString(36).substr(2,4)}`,
+      exerciseId: ex.id, name: ex.name, muscle: ex.muscle, pattern: ex.pattern,
+      isPrimary: false,
+      sets: Array(ex.sets_default || 3).fill(null).map((_, i) => ({
+        setNumber: i+1, weight: '', reps: '', rir: '', completed: false
+      })),
+      repRange: ex.rep_range_accumulation,
+      targetRIR: ex.rir_target_accumulation,
+      restSeconds: ex.rest_accumulation,
+      notes: ex.notes, warnings: [], swapHistory: [],
+    }
+    setExercises(prev => [...prev, newEx])
+    setActiveIdx(exercises.length)
+    setShowAddPicker(false)
   }
 
   function openExNote() {
@@ -176,6 +203,9 @@ export default function WorkoutScreen({ workout, availableEquipment, allLogs, ex
                 {swapping === activeIdx ? '✓' : '⇄'}
               </button>
               <button style={s.noteBtn} onClick={openExNote}>📝</button>
+              {exercises.length > 1 && (
+                <button style={{ ...s.noteBtn, color: '#f87171' }} onClick={() => removeExercise(activeIdx)}>✕</button>
+              )}
             </div>
           </div>
 
@@ -269,6 +299,52 @@ export default function WorkoutScreen({ workout, availableEquipment, allLogs, ex
                 Finish Session
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Add Exercise Button */}
+      <div style={{ padding: '12px 14px 0' }}>
+        <button style={s.addExBtn} onClick={() => setShowAddPicker(true)}>+ Add Exercise</button>
+      </div>
+
+      {/* Add Exercise Picker */}
+      {showAddPicker && (
+        <div style={s.modal}>
+          <div style={{ ...s.modalCard, maxHeight: '85vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <span style={s.modalTitle}>ADD EXERCISE</span>
+              <button style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: 18 }} onClick={() => setShowAddPicker(false)}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
+              {['all','chest','back','shoulders','biceps','triceps','quads','hamstrings','glutes','calves','core'].map(m => (
+                <button key={m} style={{ background: filterMuscle === m ? '#14140a' : '#0a0a0a', border: `1px solid ${filterMuscle === m ? '#e8ff00' : '#1a1a1a'}`, borderRadius: 20, padding: '5px 12px', color: filterMuscle === m ? '#e8ff00' : '#555', cursor: 'pointer', fontFamily: "'DM Mono', monospace", fontSize: 10, textTransform: 'capitalize' }}
+                  onClick={() => setFilterMuscle(m)}>
+                  {m === 'all' ? 'All' : m.replace('_',' ')}
+                </button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {Object.values(EXERCISES)
+                .filter(ex => {
+                  const hasEquip = ex.equipment.length === 0 || ex.equipment.every(eq => availableEquipment.includes(eq))
+                  const notUsed = !exercises.find(e => e.exerciseId === ex.id)
+                  const muscleMatch = filterMuscle === 'all' || ex.muscle === filterMuscle
+                  return hasEquip && notUsed && muscleMatch
+                })
+                .sort((a, b) => (b.quality_score || 5) - (a.quality_score || 5))
+                .map(ex => (
+                  <button key={ex.id} style={{ background: '#0a0a0a', border: '1px solid #161616', borderRadius: 10, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', textAlign: 'left' }}
+                    onClick={() => addExerciseToSession(ex)}>
+                    <div>
+                      <div style={{ fontSize: 14, color: '#f0ede8', fontWeight: 500 }}>{ex.name}</div>
+                      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: '#555', marginTop: 2 }}>{ex.muscle?.replace('_',' ')} · Q{ex.quality_score}</div>
+                    </div>
+                    <span style={{ color: '#e8ff00', fontSize: 18 }}>+</span>
+                  </button>
+                ))
+              }
+            </div>
           </div>
         </div>
       )}
@@ -387,4 +463,5 @@ const s = {
   noteInput: { width: '100%', background: '#0a0a0a', border: '1px solid #1a1a1a', borderRadius: 10, padding: '12px', color: '#f0ede8', fontFamily: "'DM Sans', sans-serif", fontSize: 13, resize: 'none', outline: 'none', boxSizing: 'border-box', marginBottom: 16 },
   saveBtn: { width: '100%', border: 'none', borderRadius: 12, padding: '16px', fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, letterSpacing: 4, color: '#0a0a0a', cursor: 'pointer', marginBottom: 10 },
   cancelBtn: { width: '100%', background: 'transparent', border: 'none', color: '#444', cursor: 'pointer', fontFamily: "'DM Mono', monospace", fontSize: 13, padding: '8px' },
+  addExBtn: { width: '100%', background: 'transparent', border: '1px solid #222', borderRadius: 10, padding: '12px', color: '#555', cursor: 'pointer', fontFamily: "'DM Mono', monospace", fontSize: 12, letterSpacing: 1 },
 }
