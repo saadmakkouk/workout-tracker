@@ -199,7 +199,7 @@ export function generateWorkout(sessionCount, dayType, availableEquipment, allLo
   const phase = getCurrentPhase(sessionCount)
   const blockKey = getCurrentBlock(sessionCount)
   const dayProgramme = PROGRAMME[dayType]
-  const readinessData = readiness ? getReadinessMultiplier(readiness.sleep, readiness.stress, readiness.physical) : null
+  const readinessData = { multiplier: 1.0, label: 'Standard', color: '#888' }
 
   const usedExercises = []
 
