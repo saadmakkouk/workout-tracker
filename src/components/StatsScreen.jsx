@@ -53,7 +53,7 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
   }
 
   const weeklyHistory = getWeeklyVolumeHistory()
-  const maxVol = weeklyHistory.length > 0 ? Math.max(...weeklyHistory.map(w => w.volume), 1) : 1
+  const maxVol = Math.max(...weeklyHistory.map(w => w.volume), 1)
   const sessionCount = sessions.length
 
   // Get block summaries for last 2 blocks
@@ -149,28 +149,24 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
             <div key={summary.blockKey} style={s.blockCard}>
               <div style={s.blockHeader}>
                 <span style={s.blockTitle}>{summary.blockKey === 'block1' ? 'Block 1' : 'Block 2'}</span>
-                <span style={s.blockMeta}>{summary.sessions} sessions · Avg fatigue {(summary.avgFatigue || 0).toFixed(1)}/5</span>
+                <span style={s.blockMeta}>{summary.sessions} sessions · Avg fatigue {summary.avgFatigue.toFixed(1)}/5</span>
               </div>
-              {summary.progressMap && Object.entries(summary.progressMap).map(([name, data]) => (
-                data && data.start > 0 ? (
-                  <div key={name} style={s.progressRow}>
-                    <div style={s.progressName}>{name.replace('Barbell ', '').replace('Conventional ', '')}</div>
-                    <div style={s.progressData}>
-                      <span style={s.progressStart}>{data.start} lbs</span>
-                      <span style={s.progressArrow}>→</span>
-                      <span style={s.progressEnd}>{data.end} lbs</span>
-                      <span style={{ ...s.progressGain, color: (data.gain || 0) >= 0 ? '#4ade80' : '#f87171' }}>
-                        {(data.gain || 0) >= 0 ? '+' : ''}{data.gain || 0} lbs
-                      </span>
-                    </div>
+              {Object.entries(summary.progressMap).map(([name, data]) => (
+                <div key={name} style={s.progressRow}>
+                  <div style={s.progressName}>{name.replace('Barbell ', '').replace('Conventional ', '')}</div>
+                  <div style={s.progressData}>
+                    <span style={s.progressStart}>{data.start} lbs</span>
+                    <span style={s.progressArrow}>→</span>
+                    <span style={s.progressEnd}>{data.end} lbs</span>
+                    <span style={{ ...s.progressGain, color: data.gain >= 0 ? '#4ade80' : '#f87171' }}>
+                      {data.gain >= 0 ? '+' : ''}{data.gain} lbs
+                    </span>
                   </div>
-                ) : null
+                </div>
               ))}
-              {(!summary.progressMap || Object.keys(summary.progressMap).length === 0) && (
-                <div style={s.empty}>Log more sessions to see progress.</div>
-              )}
             </div>
           ))}
+
           <div style={s.sectionTitle}>SESSION HISTORY</div>
           {sessions.slice(0, 20).map((session, i) => {
             const logs = allLogs.filter(l => l.session_id === session.id)
