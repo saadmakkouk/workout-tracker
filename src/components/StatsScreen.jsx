@@ -1,4 +1,6 @@
 import { useState } from 'react'
+
+const DAY_COLORS = { chest_tri: '#e8ff00', back_bi: '#4ade80', legs: '#f97316', chest_back_shoulders: '#60a5fa', arms: '#7c3aed', plyometrics: '#f43f5e', freestyle: '#a855f7' }
 import { getProgressStats, getBlockSummary, getCurrentBlock, getWeeklyVolume } from '../lib/programming.js'
 import { EXERCISES } from '../data/exercises.js'
 
