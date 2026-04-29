@@ -142,7 +142,6 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
 
       {tab === 'blocks' && (
         <div style={s.content}>
-          {(() => { try {
           {blockSummaries.length === 0 && (
             <div style={s.empty}>Complete your first block to see summaries here.</div>
           )}
@@ -154,17 +153,17 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
               </div>
               {summary.progressMap && Object.entries(summary.progressMap).map(([name, data]) => (
                 data && data.start > 0 ? (
-                <div key={name} style={s.progressRow}>
-                  <div style={s.progressName}>{name.replace('Barbell ', '').replace('Conventional ', '')}</div>
-                  <div style={s.progressData}>
-                    <span style={s.progressStart}>{data.start} lbs</span>
-                    <span style={s.progressArrow}>→</span>
-                    <span style={s.progressEnd}>{data.end} lbs</span>
-                    <span style={{ ...s.progressGain, color: (data.gain || 0) >= 0 ? '#4ade80' : '#f87171' }}>
-                      {(data.gain || 0) >= 0 ? '+' : ''}{data.gain || 0} lbs
-                    </span>
+                  <div key={name} style={s.progressRow}>
+                    <div style={s.progressName}>{name.replace('Barbell ', '').replace('Conventional ', '')}</div>
+                    <div style={s.progressData}>
+                      <span style={s.progressStart}>{data.start} lbs</span>
+                      <span style={s.progressArrow}>→</span>
+                      <span style={s.progressEnd}>{data.end} lbs</span>
+                      <span style={{ ...s.progressGain, color: (data.gain || 0) >= 0 ? '#4ade80' : '#f87171' }}>
+                        {(data.gain || 0) >= 0 ? '+' : ''}{data.gain || 0} lbs
+                      </span>
+                    </div>
                   </div>
-                </div>
                 ) : null
               ))}
               {(!summary.progressMap || Object.keys(summary.progressMap).length === 0) && (
@@ -172,7 +171,6 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
               )}
             </div>
           ))}
-
           <div style={s.sectionTitle}>SESSION HISTORY</div>
           {sessions.slice(0, 20).map((session, i) => {
             const logs = allLogs.filter(l => l.session_id === session.id)
@@ -192,8 +190,6 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
               </div>
             )
           })}
-          } catch(e) { return <div style={s.empty}>Error loading block data. Try refreshing.</div> } })()
-          }
         </div>
       )}
 
