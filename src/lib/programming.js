@@ -304,37 +304,35 @@ function calculateTarget(exercise, phase, allLogs, readinessMultiplier = 1.0) {
   const targetRIR = phase.phase === 'deload' ? 4 : phase.phase === 'intensification' ? exercise.rir_target_strength : exercise.rir_target_accumulation
 
   let newWeight = topWeight
-  if (phase.phase === 'deload') {
-    newWeight = topWeight * 0.6
-  } else if (topRIR > targetRIR + 1) {
-    // Had more in the tank — increase weight
-    newWeight = topWeight + getIncrement(topWeight, exercise.is_primary)
-  } else if (topRIR < targetRIR - 1) {
-    // Was too hard — slight reduction
-    newWeight = topWeight * 0.975
-  }
-  // else topRIR is on target — keep same weight
-
-  newWeight = Math.round(newWeight * readinessMultiplier * 4) / 4
-
-  // Target reps = lower end of rep range for strength/accumulation
   const repRange = phase.phase === 'intensification'
     ? exercise.rep_range_strength
     : exercise.rep_range_accumulation
   const repRangeLow = repRange ? parseInt(repRange.split('-')[0]) : null
-  const repRangeHigh = repRange ? parseInt(repRange.split('-')[1]) : null
-  const lastReps = parseInt(topSetRIR?.reps) || null
 
-  let targetReps = repRangeLow
-  if (lastReps && repRangeLow && repRangeHigh) {
-    if (lastReps >= repRangeLow && lastReps <= repRangeHigh) {
-      targetReps = lastReps
-    } else if (lastReps > repRangeHigh) {
-      targetReps = repRangeHigh
-    } else {
-      targetReps = repRangeLow
+  if (phase.phase === 'deload') {
+    newWeight = topWeight * 0.6
+  } else if (exercise.is_primary) {
+    // PRIMARY LIFTS — straight sets, RIR-driven weight progression
+    // RIR 2-4 on target reps → add weight, you earned it
+    // RIR 0-1 → too hard, stay same weight
+    // RIR 5+ → way too easy, add double increment
+    if (topRIR >= 5) {
+      newWeight = topWeight + getIncrement(topWeight, true) * 2
+    } else if (topRIR >= 2) {
+      newWeight = topWeight + getIncrement(topWeight, true)
+    }
+    // RIR 0-1 → stay same
+  } else {
+    // ACCESSORIES — double progression (fill rep range, then add weight)
+    if (topRIR > targetRIR + 1) {
+      newWeight = topWeight + getIncrement(topWeight, false)
+    } else if (topRIR < targetRIR - 1) {
+      newWeight = topWeight * 0.975
     }
   }
+
+  newWeight = Math.round(newWeight * readinessMultiplier * 4) / 4
+  const targetReps = repRangeLow
 
   return { weight: newWeight, reps: targetReps, lastRIR: topRIR, source: 'calculated' }
 }
