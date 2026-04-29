@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
-const DAY_LABELS = { day1: 'Upper — Strength', day2: 'Lower — Strength', day3: 'Upper — Volume', day4: 'Lower — Athletic', freestyle: 'Freestyle' }
-const DAY_COLORS = { day1: '#e8ff00', day2: '#4ade80', day3: '#60a5fa', day4: '#f97316', freestyle: '#7c3aed' }
+const DAY_LABELS = { chest_tri: 'Chest + Triceps', back_bi: 'Back + Biceps', legs: 'Legs', chest_back_shoulders: 'Chest + Back + Shoulders', arms: 'Arms', plyometrics: 'Plyometrics', freestyle: 'Freestyle' }
+const DAY_COLORS = { chest_tri: '#e8ff00', back_bi: '#4ade80', legs: '#f97316', chest_back_shoulders: '#60a5fa', arms: '#7c3aed', plyometrics: '#f43f5e', freestyle: '#a855f7' }
 const PHASE_COLORS = { accumulation: '#4ade80', intensification: '#e8ff00', deload: '#60a5fa', freestyle: '#7c3aed' }
 
 export default function HistoryScreen({ sessions, allLogs, onBack }) {
@@ -19,10 +19,10 @@ export default function HistoryScreen({ sessions, allLogs, onBack }) {
       </div>
 
       <div style={s.filterRow}>
-        {['all', 'day1', 'day2', 'day3', 'day4', 'freestyle'].map(f => (
+        {['all', 'chest_tri', 'back_bi', 'legs', 'chest_back_shoulders', 'arms', 'plyometrics', 'freestyle'].map(f => (
           <button key={f} style={{ ...s.filterBtn, ...(filter === f ? { ...s.filterActive, borderColor: DAY_COLORS[f] || '#e8ff00', color: DAY_COLORS[f] || '#e8ff00' } : {}) }}
             onClick={() => setFilter(f)}>
-            {f === 'all' ? 'All' : f === 'freestyle' ? 'Free' : f.replace('day', 'D')}
+            {f === 'all' ? 'All' : f === 'chest_tri' ? 'Chest' : f === 'back_bi' ? 'Back' : f === 'legs' ? 'Legs' : f === 'chest_back_shoulders' ? 'CBS' : f === 'arms' ? 'Arms' : f === 'plyometrics' ? 'Plyo' : 'Free'}
           </button>
         ))}
       </div>

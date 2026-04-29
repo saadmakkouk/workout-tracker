@@ -170,7 +170,7 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
           <div style={s.sectionTitle}>SESSION HISTORY</div>
           {sessions.slice(0, 20).map((session, i) => {
             const logs = allLogs.filter(l => l.session_id === session.id)
-            const dayLabels = { day1: 'Upper Str', day2: 'Lower Str', day3: 'Upper Vol', day4: 'Lower Ath', freestyle: 'Free' }
+            const dayLabels = { chest_tri: 'Chest+Tri', back_bi: 'Back+Bi', legs: 'Legs', chest_back_shoulders: 'CBS', arms: 'Arms', plyometrics: 'Plyo', freestyle: 'Free' }
             return (
               <div key={session.id} style={s.sessionRow}>
                 <span style={s.sessionNum}>#{sessions.length - i}</span>
