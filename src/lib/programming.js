@@ -294,18 +294,24 @@ function calculateTarget(exercise, phase, allLogs, readinessMultiplier = 1.0) {
   const rirs = sets.map(s => parseInt(s.rir)).filter(r => !isNaN(r))
   if (weights.length === 0) return { weight: null, reps: null, source: 'no_weight' }
 
-  const avgWeight = weights.reduce((a, b) => a + b, 0) / weights.length
+  // Use top weight from last session not average — avoids warmup sets pulling it down
+  const topWeight = Math.max(...weights)
+  const topSetRIR = sets.find(s => parseFloat(s.weight) === topWeight)
   const avgRIR = rirs.length > 0 ? rirs.reduce((a, b) => a + b, 0) / rirs.length : 2
+  const topRIR = topSetRIR?.rir !== '' && topSetRIR?.rir !== undefined ? parseInt(topSetRIR.rir) : avgRIR
   const targetRIR = phase.phase === 'deload' ? 4 : phase.phase === 'intensification' ? exercise.rir_target_strength : exercise.rir_target_accumulation
 
-  let newWeight = avgWeight
+  let newWeight = topWeight
   if (phase.phase === 'deload') {
-    newWeight = avgWeight * 0.6
-  } else if (avgRIR > targetRIR + 1) {
-    newWeight = avgWeight + getIncrement(avgWeight, exercise.is_primary)
-  } else if (avgRIR < targetRIR - 1) {
-    newWeight = avgWeight * 0.975
+    newWeight = topWeight * 0.6
+  } else if (topRIR > targetRIR + 1) {
+    // Had more in the tank — increase weight
+    newWeight = topWeight + getIncrement(topWeight, exercise.is_primary)
+  } else if (topRIR < targetRIR - 1) {
+    // Was too hard — slight reduction
+    newWeight = topWeight * 0.975
   }
+  // else topRIR is on target — keep same weight
 
   newWeight = Math.round(newWeight * readinessMultiplier * 4) / 4
   return { weight: newWeight, reps: null, lastRIR: avgRIR, source: 'calculated' }
