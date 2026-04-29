@@ -283,16 +283,18 @@ function calculateTarget(exercise, phase, allLogs, readinessMultiplier = 1.0) {
     .filter(l => l.exercise_name === exercise.name)
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 
-  if (history.length === 0) return { weight: null, reps: null, source: 'first_time' }
+  const repRangeDefault = phase.phase === 'intensification' ? exercise.rep_range_strength : exercise.rep_range_accumulation
+  const defaultReps = repRangeDefault ? parseInt(repRangeDefault.split('-')[0]) : null
+  if (history.length === 0) return { weight: null, reps: defaultReps, source: 'first_time' }
 
   const lastLog = history[0]
   let sets = []
   try { sets = typeof lastLog.sets === 'string' ? JSON.parse(lastLog.sets) : lastLog.sets || [] } catch { sets = [] }
-  if (sets.length === 0) return { weight: null, reps: null, source: 'no_data' }
+  if (sets.length === 0) return { weight: null, reps: defaultReps, source: 'no_data' }
 
   const weights = sets.map(s => parseFloat(s.weight)).filter(w => !isNaN(w) && w > 0)
   const rirs = sets.map(s => parseInt(s.rir)).filter(r => !isNaN(r))
-  if (weights.length === 0) return { weight: null, reps: null, source: 'no_weight' }
+  if (weights.length === 0) return { weight: null, reps: defaultReps, source: 'no_weight' }
 
   // Use top weight from last session not average — avoids warmup sets pulling it down
   const topWeight = Math.max(...weights)
@@ -314,7 +316,14 @@ function calculateTarget(exercise, phase, allLogs, readinessMultiplier = 1.0) {
   // else topRIR is on target — keep same weight
 
   newWeight = Math.round(newWeight * readinessMultiplier * 4) / 4
-  return { weight: newWeight, reps: null, lastRIR: avgRIR, source: 'calculated' }
+
+  // Target reps = lower end of rep range for strength/accumulation
+  const repRange = phase.phase === 'intensification'
+    ? exercise.rep_range_strength
+    : exercise.rep_range_accumulation
+  const targetReps = repRange ? parseInt(repRange.split('-')[0]) : null
+
+  return { weight: newWeight, reps: targetReps, lastRIR: topRIR, source: 'calculated' }
 }
 
 function getIncrement(weight, isPrimary) {
@@ -325,7 +334,7 @@ function getIncrement(weight, isPrimary) {
 function buildSets(exercise, phase, targetData, setsReduction = 0) {
   const totalSets = Math.max(1, exercise.sets_default - setsReduction)
   return Array(totalSets).fill(null).map((_, i) => ({
-    setNumber: i + 1, weight: targetData.weight || '', reps: '', rir: '', completed: false,
+    setNumber: i + 1, weight: targetData.weight || '', reps: targetData.reps || '', rir: '', completed: false,
   }))
 }
 
