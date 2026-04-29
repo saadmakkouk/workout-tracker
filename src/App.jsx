@@ -144,7 +144,8 @@ export default function App() {
       )}
       {screen === 'setup' && (
         <SetupScreen
-          sessionCount={sessions.length} allLogs={allLogs} recentSessions={sessions.slice(0, 3)}
+          sessionCount={sessions.length} allLogs={allLogs} recentSessions={sessions.slice(0, 10)}
+          sessions={sessions}
           onStart={(equipment, workout) => {
             setSelectedEquipment(equipment)
             setCurrentWorkout(workout)

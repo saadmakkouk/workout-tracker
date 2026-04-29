@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { getProgressStats, getWeeklyVolume, getCurrentPhase, getCurrentBlock, getDayType, getNextDayType, getWeekSchedule, getBlockNumber } from '../lib/programming.js'
+import { getProgressStats, getWeeklyVolume, getCurrentPhase, getCurrentBlock, getDayType, getNextDayType, getBlockNumber } from '../lib/programming.js'
 import { PROGRAMME, EXERCISES } from '../data/exercises.js'
 
-const DAY_COLORS = { day1: '#e8ff00', day2: '#4ade80', day3: '#60a5fa', day4: '#f97316', freestyle: '#7c3aed' }
+const DAY_COLORS = { chest_tri: '#e8ff00', back_bi: '#4ade80', legs: '#f97316', chest_back_shoulders: '#60a5fa', arms: '#7c3aed', plyometrics: '#f43f5e', freestyle: '#a855f7' }
 
 export default function HomeScreen({ sessions, allLogs, bodyweightLog, fatigue, sessionCount, onStartSetup, onFreestyle, onHistory, onStats, onSaveBodyweight }) {
   const [showBWInput, setShowBWInput] = useState(false)
@@ -22,7 +22,6 @@ export default function HomeScreen({ sessions, allLogs, bodyweightLog, fatigue, 
   const blockNum = getBlockNumber(sessionCount)
   const dayType = getNextDayType(sessions)
   const nextDay = PROGRAMME[dayType]
-  const weekSchedule = getWeekSchedule(sessionCount)
   const dayColor = DAY_COLORS[dayType] || '#e8ff00'
 
   const primaryLifts = [
@@ -31,6 +30,8 @@ export default function HomeScreen({ sessions, allLogs, bodyweightLog, fatigue, 
     { id: 'back_squat', label: 'Squat' },
     { id: 'barbell_ohp', label: 'OHP' },
     { id: 'barbell_row', label: 'Row' },
+    { id: 'incline_barbell_bench', label: 'Incline' },
+    { id: 'weighted_pullup', label: 'Pull-Up' },
   ]
 
   const latestBW = bodyweightLog[0]?.weight
@@ -95,18 +96,21 @@ export default function HomeScreen({ sessions, allLogs, bodyweightLog, fatigue, 
         <button style={s.freestyleBtn} onClick={onFreestyle}>Freestyle Session</button>
       </div>
 
-      {/* Week Schedule Preview */}
+      {/* Session Types */}
       <div style={s.section}>
-        <div style={s.sectionTitle}>UPCOMING SESSIONS</div>
+        <div style={s.sectionTitle}>SESSIONS</div>
         <div style={s.scheduleGrid}>
-          {weekSchedule.map((day, i) => (
-            <div key={i} style={{ ...s.scheduleCard, ...(day.isNext ? { ...s.scheduleCardActive, borderColor: DAY_COLORS[day.dayType] } : {}) }}>
-              <div style={{ ...s.scheduleDot, background: DAY_COLORS[day.dayType] }} />
-              <div style={s.scheduleLabel}>{day.label.split('—')[1]?.trim() || day.label}</div>
-              <div style={s.scheduleFocus}>{day.focus.split('&')[0]?.trim()}</div>
-              {day.isNext && <div style={s.scheduleNext}>NEXT</div>}
-            </div>
-          ))}
+          {Object.values(PROGRAMME).filter(p => p.isBlocked).map((session, i) => {
+            const isNext = session.id === dayType
+            return (
+              <div key={i} style={{ ...s.scheduleCard, ...(isNext ? { ...s.scheduleCardActive, borderColor: session.color } : {}) }}>
+                <div style={{ ...s.scheduleDot, background: session.color }} />
+                <div style={s.scheduleLabel}>{session.label.split('+')[0]?.trim()}</div>
+                <div style={s.scheduleFocus}>{session.focus.split('&')[0]?.trim()}</div>
+                {isNext && <div style={s.scheduleNext}>NEXT</div>}
+              </div>
+            )
+          })}
         </div>
       </div>
 
@@ -158,7 +162,7 @@ export default function HomeScreen({ sessions, allLogs, bodyweightLog, fatigue, 
           </div>
           {sessions.slice(0, 3).map(session => {
             const logs = allLogs.filter(l => l.session_id === session.id)
-            const dayLabels = { day1: 'Upper Strength', day2: 'Lower Strength', day3: 'Upper Volume', day4: 'Lower Athletic', freestyle: 'Freestyle' }
+            const dayLabels = { chest_tri: 'Chest + Triceps', back_bi: 'Back + Biceps', legs: 'Legs', chest_back_shoulders: 'Chest + Back + Shoulders', arms: 'Arms', plyometrics: 'Plyometrics', freestyle: 'Freestyle' }
             const color = DAY_COLORS[session.day_type] || '#888'
             return (
               <div key={session.id} style={s.sessionRow}>

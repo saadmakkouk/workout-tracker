@@ -7,10 +7,18 @@ import { EXERCISES, PROGRAMME, BLOCK_ROTATIONS, WARNINGS } from '../data/exercis
 // Deload: sessions 24-27 (week 7)
 
 export function getCurrentPhase(sessionCount) {
-  const posInBlock = sessionCount % 28
-  if (posInBlock < 12) return { phase: 'accumulation', week: Math.floor(posInBlock / 4) + 1, label: 'Accumulation' }
-  if (posInBlock < 24) return { phase: 'intensification', week: Math.floor((posInBlock - 12) / 4) + 4, label: 'Intensification' }
-  return { phase: 'deload', week: 7, label: 'Deload' }
+  // 7 week block: weeks 1-3 accumulation, 4-6 intensification, 7 deload
+  const weekInBlock = (sessionCount % 28)
+  const week = Math.floor(weekInBlock / 4) + 1
+  if (week <= 3) return { phase: 'accumulation', label: 'Accumulation', week }
+  if (week <= 6) return { phase: 'intensification', label: 'Intensification', week }
+  return { phase: 'deload', label: 'Deload', week }
+}
+
+// Get phase for a specific session type based on its own count
+export function getSessionPhase(sessions, sessionType) {
+  const typeSessions = (sessions || []).filter(s => s.day_type === sessionType)
+  return getCurrentPhase(typeSessions.length)
 }
 
 export function getCurrentBlock(sessionCount) {
@@ -21,33 +29,20 @@ export function getDayType(sessionCount) {
   return ['day1', 'day2', 'day3', 'day4'][sessionCount % 4]
 }
 
-// Get next day type based on what's missing in current cycle
+// Get suggested next session — returns least recently done blocked session
 export function getNextDayType(sessions) {
-  if (!sessions || sessions.length === 0) return 'day1'
-  const days = ['day1', 'day2', 'day3', 'day4']
-  const programmed = sessions.filter(s => days.includes(s.day_type))
-  if (programmed.length === 0) return 'day1'
-
-  // Figure out current cycle — group sessions into cycles of 4
-  // Count how many complete cycles of all 4 days have been done
-  // Then find which days are missing in the current incomplete cycle
-  const totalProgrammed = programmed.length
-  const completedFullCycles = Math.floor(totalProgrammed / 4)
-
-  // Sessions in current cycle (most recent incomplete cycle)
-  const currentCycleSessions = programmed.slice(0, totalProgrammed - (completedFullCycles * 4))
-  const doneInCurrentCycle = currentCycleSessions.map(s => s.day_type)
-
-  // Find first missing day in order
-  const missing = days.filter(d => !doneInCurrentCycle.includes(d))
-
-  if (missing.length === 0) {
-    // All 4 done — start next cycle from day1
-    return 'day1'
-  }
-
-  // Return the first missing day in order
-  return missing[0]
+  const blockedTypes = ['chest_tri', 'back_bi', 'legs']
+  if (!sessions || sessions.length === 0) return 'chest_tri'
+  
+  // Find last time each blocked session was done
+  const lastDone = {}
+  blockedTypes.forEach(type => {
+    const last = sessions.find(s => s.day_type === type)
+    lastDone[type] = last ? new Date(last.date).getTime() : 0
+  })
+  
+  // Return the one done least recently
+  return blockedTypes.sort((a, b) => lastDone[a] - lastDone[b])[0]
 }
 
 export function getBlockNumber(sessionCount) {
