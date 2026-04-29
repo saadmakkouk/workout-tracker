@@ -53,7 +53,7 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
   }
 
   const weeklyHistory = getWeeklyVolumeHistory()
-  const maxVol = Math.max(...weeklyHistory.map(w => w.volume), 1)
+  const maxVol = weeklyHistory.length > 0 ? Math.max(...weeklyHistory.map(w => w.volume), 1) : 1
   const sessionCount = sessions.length
 
   // Get block summaries for last 2 blocks
@@ -142,6 +142,7 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
 
       {tab === 'blocks' && (
         <div style={s.content}>
+          {(() => { try {
           {blockSummaries.length === 0 && (
             <div style={s.empty}>Complete your first block to see summaries here.</div>
           )}
@@ -191,6 +192,8 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
               </div>
             )
           })}
+          } catch(e) { return <div style={s.empty}>Error loading block data. Try refreshing.</div> } })()
+          }
         </div>
       )}
 
