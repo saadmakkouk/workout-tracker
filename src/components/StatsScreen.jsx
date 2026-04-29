@@ -181,7 +181,7 @@ export default function StatsScreen({ sessions, allLogs, bodyweightLog, onBack }
                 <div style={s.sessionRight}>
                   {session.phase && <span style={{ ...s.phasePill, color: PHASE_COLORS[session.phase] || '#888' }}>{session.phase}</span>}
                   <span style={s.sessionEx}>{logs.length} ex</span>
-                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: getFatigueColor(session.fatigue_level) }} />
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: DAY_COLORS[session.day_type] || '#888' }} />
                 </div>
               </div>
             )
