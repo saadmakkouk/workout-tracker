@@ -321,7 +321,20 @@ function calculateTarget(exercise, phase, allLogs, readinessMultiplier = 1.0) {
   const repRange = phase.phase === 'intensification'
     ? exercise.rep_range_strength
     : exercise.rep_range_accumulation
-  const targetReps = repRange ? parseInt(repRange.split('-')[0]) : null
+  const repRangeLow = repRange ? parseInt(repRange.split('-')[0]) : null
+  const repRangeHigh = repRange ? parseInt(repRange.split('-')[1]) : null
+  const lastReps = parseInt(topSetRIR?.reps) || null
+
+  let targetReps = repRangeLow
+  if (lastReps && repRangeLow && repRangeHigh) {
+    if (lastReps >= repRangeLow && lastReps <= repRangeHigh) {
+      targetReps = lastReps
+    } else if (lastReps > repRangeHigh) {
+      targetReps = repRangeHigh
+    } else {
+      targetReps = repRangeLow
+    }
+  }
 
   return { weight: newWeight, reps: targetReps, lastRIR: topRIR, source: 'calculated' }
 }
