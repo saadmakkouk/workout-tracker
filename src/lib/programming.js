@@ -227,6 +227,8 @@ export function generateWorkout(sessionCount, dayType, availableEquipment, allLo
     return {
       id: `${exercise.id}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
       exerciseId: exercise.id,
+      originalExerciseId: exercise.id,
+      originalExerciseName: exercise.name,
       name: exercise.name,
       muscle: exercise.muscle,
       pattern: exercise.pattern,
@@ -248,6 +250,7 @@ export function generateWorkout(sessionCount, dayType, availableEquipment, allLo
       warnings: [],
       completed: false,
       swapHistory: [],
+      swapHistoryIds: [],
     }
   }).filter(Boolean)
 
@@ -395,25 +398,70 @@ export function checkConsecutiveDays(selectedDayType, recentSessions) {
 }
 
 // ─── SWAP EXERCISE ────────────────────────────────────────────────
-export function swapExercise(currentExercise, availableEquipment, currentExerciseIds, allLogs) {
-  const recentNames = allLogs.slice(0, 20).map(l => l.exercise_name)
-  const candidates = Object.values(EXERCISES).filter(ex =>
-    ex.pattern === currentExercise.pattern &&
-    ex.id !== currentExercise.exerciseId &&
-    !currentExerciseIds.includes(ex.id) &&
-    (ex.equipment.length === 0 || ex.equipment.every(eq => availableEquipment.includes(eq)))
-  )
-  if (candidates.length === 0) return null
+export function swapExercise(currentExercise, availableEquipment, currentExerciseIds = [], allLogs = []) {
+  const anchorId = currentExercise.originalExerciseId || currentExercise.exerciseId
+  const anchorExercise = EXERCISES[anchorId] || EXERCISES[currentExercise.exerciseId]
+  if (!anchorExercise) return null
 
-  // Sort by quality score descending — best evidence-based exercise first
-  // Prefer exercises not recently done, but quality score wins
-  const scored = candidates.map(ex => {
+  const currentId = currentExercise.exerciseId
+  const triedIds = currentExercise.swapHistoryIds || []
+  const recentNames = (allLogs || []).slice(0, 20).map(l => l.exercise_name)
+
+  // Prevent duplicates elsewhere in the same workout, but allow this slot to
+  // move back to its own original exercise.
+  const usedInOtherSlots = (currentExerciseIds || []).filter(id => id !== currentId)
+
+  const isUsable = (ex) => {
+    if (!ex) return false
+    const hasEquipment = ex.equipment.length === 0 || ex.equipment.every(eq => availableEquipment.includes(eq))
+    const usedElsewhere = usedInOtherSlots.includes(ex.id)
+    return hasEquipment && !usedElsewhere
+  }
+
+  const candidates = Object.values(EXERCISES).filter(ex =>
+    ex.pattern === anchorExercise.pattern &&
+    isUsable(ex)
+  )
+
+  if (candidates.length <= 1 && candidates.some(ex => ex.id === currentId)) return null
+
+  const scoreCandidate = (ex) => {
     let score = (ex.quality_score ?? 5) * 5
+    if (ex.muscle === anchorExercise.muscle) score += 40
+    if ((ex.is_primary ?? false) === (currentExercise.isPrimary ?? anchorExercise.is_primary ?? false)) score += 12
+    if (ex.tier === anchorExercise.tier) score += 8
+    else if (Math.abs((ex.tier ?? 99) - (anchorExercise.tier ?? 99)) === 1) score += 4
     if (recentNames.includes(ex.name)) score -= 10
-    return { ex, score }
-  })
-  scored.sort((a, b) => b.score - a.score)
-  return scored[0].ex
+    if (ex.id === anchorId) score += 2 // original is valid, but handled after fresh alternatives
+    return score
+  }
+
+  const sortBest = (list) => [...list].sort((a, b) => scoreCandidate(b) - scoreCandidate(a))
+
+  // First, cycle through fresh alternatives anchored to the original slot.
+  const freshAlternatives = sortBest(candidates.filter(ex =>
+    ex.id !== currentId &&
+    ex.id !== anchorId &&
+    !triedIds.includes(ex.id)
+  ))
+
+  if (freshAlternatives.length > 0) {
+    return { ...freshAlternatives[0], __swapReset: false, __returnedToOriginal: false }
+  }
+
+  // Once every alternative has been tried, go back to the original exercise if possible.
+  const originalCandidate = candidates.find(ex => ex.id === anchorId)
+  if (currentId !== anchorId && originalCandidate) {
+    return { ...originalCandidate, __swapReset: true, __returnedToOriginal: true }
+  }
+
+  // If the original is unavailable or we're already on it, reset the cycle and start again.
+  const resetAlternatives = sortBest(candidates.filter(ex => ex.id !== currentId && ex.id !== anchorId))
+  if (resetAlternatives.length > 0) {
+    return { ...resetAlternatives[0], __swapReset: true, __returnedToOriginal: false }
+  }
+
+  return null
 }
 
 // ─── FATIGUE ANALYSIS ────────────────────────────────────────────
