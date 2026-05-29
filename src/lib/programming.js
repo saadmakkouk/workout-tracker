@@ -404,11 +404,11 @@ export function swapExercise(currentExercise, availableEquipment, currentExercis
   if (!anchorExercise) return null
 
   const currentId = currentExercise.exerciseId
-  const triedIds = currentExercise.swapHistoryIds || []
   const recentNames = (allLogs || []).slice(0, 20).map(l => l.exercise_name)
 
-  // Prevent duplicates elsewhere in the same workout, but allow this slot to
-  // move back to its own original exercise.
+  // Block duplicates elsewhere in the same workout, but do NOT block the
+  // current slot's own current exercise or original exercise. This is what
+  // allows the cycle to eventually return to the original movement.
   const usedInOtherSlots = (currentExerciseIds || []).filter(id => id !== currentId)
 
   const isUsable = (ex) => {
@@ -419,11 +419,10 @@ export function swapExercise(currentExercise, availableEquipment, currentExercis
   }
 
   const candidates = Object.values(EXERCISES).filter(ex =>
-    ex.pattern === anchorExercise.pattern &&
-    isUsable(ex)
+    ex.pattern === anchorExercise.pattern && isUsable(ex)
   )
 
-  if (candidates.length <= 1 && candidates.some(ex => ex.id === currentId)) return null
+  if (candidates.length <= 1) return null
 
   const scoreCandidate = (ex) => {
     let score = (ex.quality_score ?? 5) * 5
@@ -432,36 +431,31 @@ export function swapExercise(currentExercise, availableEquipment, currentExercis
     if (ex.tier === anchorExercise.tier) score += 8
     else if (Math.abs((ex.tier ?? 99) - (anchorExercise.tier ?? 99)) === 1) score += 4
     if (recentNames.includes(ex.name)) score -= 10
-    if (ex.id === anchorId) score += 2 // original is valid, but handled after fresh alternatives
     return score
   }
 
-  const sortBest = (list) => [...list].sort((a, b) => scoreCandidate(b) - scoreCandidate(a))
+  const original = candidates.find(ex => ex.id === anchorId)
+  const alternatives = candidates
+    .filter(ex => ex.id !== anchorId)
+    .sort((a, b) => scoreCandidate(b) - scoreCandidate(a))
 
-  // First, cycle through fresh alternatives anchored to the original slot.
-  const freshAlternatives = sortBest(candidates.filter(ex =>
-    ex.id !== currentId &&
-    ex.id !== anchorId &&
-    !triedIds.includes(ex.id)
-  ))
+  // Deterministic cycle:
+  // Original → best alternative → next alternative → ... → Original.
+  // This avoids the bug where swaps are based on the swapped exercise instead
+  // of the original slot.
+  const cycle = original ? [original, ...alternatives] : alternatives
+  if (cycle.length <= 1) return null
 
-  if (freshAlternatives.length > 0) {
-    return { ...freshAlternatives[0], __swapReset: false, __returnedToOriginal: false }
+  const currentIndex = cycle.findIndex(ex => ex.id === currentId)
+  const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % cycle.length : 0
+  const nextExercise = cycle[nextIndex]
+
+  return {
+    ...nextExercise,
+    __returnedToOriginal: nextExercise.id === anchorId,
+    __cycleIndex: nextIndex,
+    __cycleLength: cycle.length,
   }
-
-  // Once every alternative has been tried, go back to the original exercise if possible.
-  const originalCandidate = candidates.find(ex => ex.id === anchorId)
-  if (currentId !== anchorId && originalCandidate) {
-    return { ...originalCandidate, __swapReset: true, __returnedToOriginal: true }
-  }
-
-  // If the original is unavailable or we're already on it, reset the cycle and start again.
-  const resetAlternatives = sortBest(candidates.filter(ex => ex.id !== currentId && ex.id !== anchorId))
-  if (resetAlternatives.length > 0) {
-    return { ...resetAlternatives[0], __swapReset: true, __returnedToOriginal: false }
-  }
-
-  return null
 }
 
 // ─── FATIGUE ANALYSIS ────────────────────────────────────────────
