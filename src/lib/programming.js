@@ -227,8 +227,11 @@ export function generateWorkout(sessionCount, dayType, availableEquipment, allLo
     return {
       id: `${exercise.id}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
       exerciseId: exercise.id,
-      originalExerciseId: exercise.id,
-      originalExerciseName: exercise.name,
+      // Keep the programme slot as the anchor for swaps.
+      // Example: if the slot is Back Squat but equipment/block logic resolves it to Hack Squat,
+      // swaps still cycle around the original Back Squat slot instead of treating Hack Squat as the anchor.
+      originalExerciseId: slot.exerciseId,
+      originalExerciseName: EXERCISES[slot.exerciseId]?.name || exercise.name,
       name: exercise.name,
       muscle: exercise.muscle,
       pattern: exercise.pattern,
