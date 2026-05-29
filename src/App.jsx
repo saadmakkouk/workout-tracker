@@ -63,7 +63,7 @@ export default function App() {
     try { localStorage.setItem('lift_exercise_notes', JSON.stringify(updated)) } catch {}
   }
 
-  async function saveSession(workout, exercises, fatigueLevel, sessionNotes) {
+  async function saveSession(workout, exercises, fatigueLevel, sessionNotes, durationSeconds = null) {
     try {
       const { data: sessionData, error } = await supabase
         .from('sessions')
@@ -76,6 +76,7 @@ export default function App() {
           block_key: workout.blockKey,
           block_number: workout.blockNumber,
           session_number: workout.sessionCount,
+          duration_seconds: durationSeconds,
         })
         .select().single()
 
@@ -158,7 +159,7 @@ export default function App() {
         <WorkoutScreen
           workout={currentWorkout} availableEquipment={selectedEquipment}
           allLogs={allLogs} exerciseNotes={exerciseNotes}
-          onFinish={(exercises, fatigueLevel, notes) => saveSession(currentWorkout, exercises, fatigueLevel, notes)}
+          onFinish={(exercises, fatigueLevel, notes, durationSeconds) => saveSession(currentWorkout, exercises, fatigueLevel, notes, durationSeconds)}
           onBack={() => setScreen('home')}
           onUpdateWorkout={setCurrentWorkout}
           onSaveExerciseNote={saveExerciseNote}
@@ -167,9 +168,9 @@ export default function App() {
       {screen === 'freestyle' && (
         <FreestyleScreen
           allLogs={allLogs}
-          onFinish={async (exercises, fatigueLevel, notes) => {
+          onFinish={async (exercises, fatigueLevel, notes, durationSeconds) => {
             const fakeWorkout = { dayType: 'freestyle', phase: 'freestyle', blockKey: 'freestyle', blockNumber: 0, sessionCount: sessions.length }
-            await saveSession(fakeWorkout, exercises, fatigueLevel, notes)
+            await saveSession(fakeWorkout, exercises, fatigueLevel, notes, durationSeconds)
           }}
           onBack={() => setScreen('home')}
         />

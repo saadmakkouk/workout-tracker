@@ -4,6 +4,15 @@ const DAY_LABELS = { chest_tri: 'Chest + Triceps', back_bi: 'Back + Biceps', leg
 const DAY_COLORS = { chest_tri: '#e8ff00', back_bi: '#4ade80', legs: '#f97316', chest_back_shoulders: '#60a5fa', arms: '#7c3aed', plyometrics: '#f43f5e', freestyle: '#a855f7' }
 const PHASE_COLORS = { accumulation: '#4ade80', intensification: '#e8ff00', deload: '#60a5fa', freestyle: '#7c3aed' }
 
+function formatDuration(seconds) {
+  if (!seconds || seconds < 0) return null
+  const mins = Math.round(seconds / 60)
+  if (mins < 60) return `${mins} min`
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  return m > 0 ? `${h}h ${m}m` : `${h}h`
+}
+
 export default function HistoryScreen({ sessions, allLogs, onBack }) {
   const [expanded, setExpanded] = useState(null)
   const [filter, setFilter] = useState('all')
@@ -53,6 +62,7 @@ export default function HistoryScreen({ sessions, allLogs, onBack }) {
                       {session.phase && <span style={{ ...s.metaTag, color: PHASE_COLORS[session.phase] || '#888' }}>{session.phase}</span>}
                       {session.block_number && session.day_type !== 'freestyle' && <span style={s.metaTag}>Block {session.block_number}</span>}
                       {totalVol > 0 && <span style={s.metaTag}>{Math.round(totalVol)}lbs vol</span>}
+                      {session.duration_seconds && <span style={s.metaTag}>⏱ {formatDuration(session.duration_seconds)}</span>}
                       <span style={{ ...s.metaTag, color: getFatigueColor(session.fatigue_level) }}>F{session.fatigue_level}/5</span>
                     </div>
                   </div>

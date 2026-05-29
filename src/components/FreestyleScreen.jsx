@@ -73,6 +73,7 @@ export default function FreestyleScreen({ onFinish, onBack, allLogs = [] }) {
   const [selectedTargets, setSelectedTargets] = useState([])
   const [equipment, setEquipment] = useState([])
   const [activePreset, setActivePreset] = useState(null)
+  const [sessionStartTime, setSessionStartTime] = useState(null)
   const [exercises, setExercises] = useState([])
   const [activeIdx, setActiveIdx] = useState(0)
   const [showFinish, setShowFinish] = useState(false)
@@ -101,6 +102,7 @@ export default function FreestyleScreen({ onFinish, onBack, allLogs = [] }) {
   }
 
   function handleGenerate() {
+    setSessionStartTime(Date.now())
     const generated = generateSmartSession(selectedTargets, equipment)
     setExercises(generated)
     setActiveIdx(0)
@@ -182,6 +184,20 @@ export default function FreestyleScreen({ onFinish, onBack, allLogs = [] }) {
     setExercises(prev => [...prev, newEx])
     setActiveIdx(exercises.length)
     setShowAddPicker(false)
+  }
+
+  function getSessionDurationSeconds() {
+    const start = sessionStartTime || Date.now()
+    return Math.round((Date.now() - start) / 1000)
+  }
+
+  function formatDuration(seconds) {
+    if (!seconds || seconds < 0) return '0 min'
+    const mins = Math.round(seconds / 60)
+    if (mins < 60) return `${mins} min`
+    const h = Math.floor(mins / 60)
+    const m = mins % 60
+    return m > 0 ? `${h}h ${m}m` : `${h}h`
   }
 
   const activeEx = exercises[activeIdx]
@@ -449,6 +465,7 @@ export default function FreestyleScreen({ onFinish, onBack, allLogs = [] }) {
           <div style={s.modalCard}>
             <div style={s.modalTitle}>SESSION DONE</div>
             <div style={s.modalSub}>{exercises.filter(ex => ex.sets.some(s => s.weight && s.reps)).length}/{exercises.length} exercises logged</div>
+            <div style={s.durationPreview}>Duration: {formatDuration(getSessionDurationSeconds())}</div>
 
             <div style={s.modalLabel}>Overall fatigue?</div>
             <div style={s.fatigueRow}>
@@ -465,7 +482,7 @@ export default function FreestyleScreen({ onFinish, onBack, allLogs = [] }) {
               value={sessionNotes} onChange={e => setSessionNotes(e.target.value)} rows={3} />
 
             <button style={{ ...s.saveBtn, background: '#7c3aed' }}
-              onClick={() => onFinish(exercises, fatigueLevel, sessionNotes)}>
+              onClick={() => onFinish(exercises, fatigueLevel, sessionNotes, getSessionDurationSeconds())}>
               SAVE SESSION
             </button>
             <button style={s.cancelBtn} onClick={() => setShowFinish(false)}>Keep Lifting</button>

@@ -4,6 +4,7 @@ import { swapExercise, getWarmupSets } from '../lib/programming.js'
 
 export default function WorkoutScreen({ workout, availableEquipment, allLogs, exerciseNotes, onFinish, onBack, onUpdateWorkout, onSaveExerciseNote }) {
   const [exercises, setExercises] = useState(workout.exercises)
+  const [sessionStartTime] = useState(Date.now())
   const [activeIdx, setActiveIdx] = useState(0)
   const [showFinish, setShowFinish] = useState(false)
   const [fatigueLevel, setFatigueLevel] = useState(3)
@@ -224,6 +225,19 @@ export default function WorkoutScreen({ workout, availableEquipment, allLogs, ex
     const firstLoggedWeight = activeEx?.sets?.find(set => set.weight)?.weight
     setPlateTarget(firstLoggedWeight || activeEx?.sets?.[0]?.weight || '')
     setShowPlateCalc(true)
+  }
+
+  function getSessionDurationSeconds() {
+    return Math.round((Date.now() - sessionStartTime) / 1000)
+  }
+
+  function formatDuration(seconds) {
+    if (!seconds || seconds < 0) return '0 min'
+    const mins = Math.round(seconds / 60)
+    if (mins < 60) return `${mins} min`
+    const h = Math.floor(mins / 60)
+    const m = mins % 60
+    return m > 0 ? `${h}h ${m}m` : `${h}h`
   }
 
   const activeWarnings = (activeEx?.warnings || []).filter(w => !(dismissedWarnings[activeEx?.exerciseId] || []).includes(w))
@@ -576,6 +590,7 @@ export default function WorkoutScreen({ workout, availableEquipment, allLogs, ex
           <div style={s.modalCard}>
             <div style={s.modalTitle}>SESSION DONE</div>
             <div style={s.modalSub}>{completedCount}/{exercises.length} exercises logged</div>
+            <div style={s.durationPreview}>Duration: {formatDuration(getSessionDurationSeconds())}</div>
 
             <div style={s.modalLabel}>Overall fatigue?</div>
             <div style={s.fatigueRow}>
@@ -589,7 +604,7 @@ export default function WorkoutScreen({ workout, availableEquipment, allLogs, ex
             <textarea style={s.noteInput} placeholder="Session notes? (optional)" value={sessionNotes}
               onChange={e => setSessionNotes(e.target.value)} rows={3} />
 
-            <button style={{ ...s.saveBtn, background: phaseColor }} onClick={() => onFinish(exercises, fatigueLevel, sessionNotes)}>
+            <button style={{ ...s.saveBtn, background: phaseColor }} onClick={() => onFinish(exercises, fatigueLevel, sessionNotes, getSessionDurationSeconds())}>
               SAVE SESSION
             </button>
             <button style={s.cancelBtn} onClick={() => setShowFinish(false)}>Keep Lifting</button>
@@ -676,5 +691,6 @@ const s = {
   plateError: { background: '#1a0f00', border: '1px solid #92400e', color: '#d97706', borderRadius: 10, padding: 12, fontSize: 12, marginBottom: 18 },
   plateWarning: { marginTop: 12, fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#facc15', lineHeight: 1.5 },
   plateEmpty: { fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#555', padding: '8px 0' },
+  durationPreview: { fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#888', background: '#0a0a0a', border: '1px solid #1a1a1a', borderRadius: 10, padding: '10px 12px', marginBottom: 18 },
   addExBtn: { width: '100%', background: 'transparent', border: '1px solid #222', borderRadius: 10, padding: '12px', color: '#555', cursor: 'pointer', fontFamily: "'DM Mono', monospace", fontSize: 12, letterSpacing: 1 },
 }
