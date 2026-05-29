@@ -147,25 +147,68 @@ export default function WorkoutScreen({ workout, availableEquipment, allLogs, ex
 
     const loadTotal = target - bar
     const perSide = loadTotal / 2
-    const sortedPlates = [...availablePlates].sort((a, b) => b - a)
+    const plates = [...availablePlates].sort((a, b) => b - a)
 
-    let remaining = perSide
-    const result = []
+    // Convert to tenths so 2.5 lb plates work without floating-point issues.
+    const targetUnits = Math.round(perSide * 10)
+    const plateUnits = plates.map(p => Math.round(p * 10))
 
-    sortedPlates.forEach(plate => {
-      const count = Math.floor((remaining + 0.001) / plate)
-      if (count > 0) {
-        result.push({ plate, count })
-        remaining = Math.round((remaining - count * plate) * 100) / 100
+    let bestCombo = null
+
+    function search(index, remaining, combo) {
+      if (remaining === 0) {
+        const totalPlates = combo.reduce((sum, item) => sum + item.count, 0)
+        const heaviestFirstPlate = combo[0]?.plate || 0
+        const bestHeaviestFirstPlate = bestCombo?.combo?.[0]?.plate || 0
+
+        if (
+          !bestCombo ||
+          totalPlates < bestCombo.totalPlates ||
+          (totalPlates === bestCombo.totalPlates && heaviestFirstPlate > bestHeaviestFirstPlate)
+        ) {
+          bestCombo = {
+            combo: combo.map(item => ({ ...item })),
+            totalPlates,
+          }
+        }
+        return
       }
-    })
+
+      if (index >= plateUnits.length || remaining < 0) return
+
+      const plate = plates[index]
+      const plateUnit = plateUnits[index]
+      const maxCount = Math.floor(remaining / plateUnit)
+
+      // Try bigger plates/counts first, but still check all combinations.
+      for (let count = maxCount; count >= 0; count--) {
+        const nextCombo = count > 0
+          ? [...combo, { plate, count }]
+          : combo
+
+        search(index + 1, remaining - count * plateUnit, nextCombo)
+      }
+    }
+
+    search(0, targetUnits, [])
+
+    if (!bestCombo) {
+      return {
+        target,
+        bar,
+        perSide,
+        plates: [],
+        remaining: perSide,
+        error: 'Cannot make this exact weight with the selected plates.',
+      }
+    }
 
     return {
       target,
       bar,
       perSide,
-      plates: result,
-      remaining: Math.round(remaining * 100) / 100,
+      plates: bestCombo.combo,
+      remaining: 0,
     }
   }
 
