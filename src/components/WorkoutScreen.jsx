@@ -16,6 +16,10 @@ export default function WorkoutScreen({ workout, availableEquipment, allLogs, ex
   const [showAddPicker, setShowAddPicker] = useState(false)
   const [filterMuscle, setFilterMuscle] = useState('all')
   const [exNoteText, setExNoteText] = useState('')
+  const [showPlateCalc, setShowPlateCalc] = useState(false)
+  const [plateTarget, setPlateTarget] = useState('')
+  const [barWeight, setBarWeight] = useState('45')
+  const [availablePlates, setAvailablePlates] = useState([45, 35, 25, 15, 10, 5, 2.5])
   const timerRef = useRef(null)
 
   const activeEx = exercises[activeIdx]
@@ -123,6 +127,60 @@ export default function WorkoutScreen({ workout, availableEquipment, allLogs, ex
   function saveExNote() {
     if (activeEx) onSaveExerciseNote(activeEx.name, exNoteText)
     setShowExNote(false)
+  }
+
+  function calculatePlates(targetWeight, barWeight, availablePlates) {
+    const target = parseFloat(targetWeight)
+    const bar = parseFloat(barWeight)
+
+    if (isNaN(target) || isNaN(bar) || target <= 0 || bar <= 0) {
+      return { error: 'Enter a valid target weight and bar weight.' }
+    }
+
+    if (target < bar) {
+      return { error: 'Target weight cannot be less than the bar weight.' }
+    }
+
+    if (!availablePlates || availablePlates.length === 0) {
+      return { error: 'Select at least one available plate.' }
+    }
+
+    const loadTotal = target - bar
+    const perSide = loadTotal / 2
+    const sortedPlates = [...availablePlates].sort((a, b) => b - a)
+
+    let remaining = perSide
+    const result = []
+
+    sortedPlates.forEach(plate => {
+      const count = Math.floor((remaining + 0.001) / plate)
+      if (count > 0) {
+        result.push({ plate, count })
+        remaining = Math.round((remaining - count * plate) * 100) / 100
+      }
+    })
+
+    return {
+      target,
+      bar,
+      perSide,
+      plates: result,
+      remaining: Math.round(remaining * 100) / 100,
+    }
+  }
+
+  function togglePlate(plate) {
+    setAvailablePlates(prev =>
+      prev.includes(plate)
+        ? prev.filter(p => p !== plate)
+        : [...prev, plate].sort((a, b) => b - a)
+    )
+  }
+
+  function openPlateCalculator() {
+    const firstLoggedWeight = activeEx?.sets?.find(set => set.weight)?.weight
+    setPlateTarget(firstLoggedWeight || activeEx?.sets?.[0]?.weight || '')
+    setShowPlateCalc(true)
   }
 
   const activeWarnings = (activeEx?.warnings || []).filter(w => !(dismissedWarnings[activeEx?.exerciseId] || []).includes(w))
@@ -288,6 +346,10 @@ export default function WorkoutScreen({ workout, availableEquipment, allLogs, ex
             </button>
           </div>
 
+          <button style={s.plateCalcBtn} onClick={openPlateCalculator}>
+            🏋️ Plate Calculator
+          </button>
+
           {/* Navigation */}
           <div style={s.navRow}>
             {activeIdx > 0 && <button style={s.navBtn} onClick={() => setActiveIdx(activeIdx - 1)}>← Prev</button>}
@@ -365,6 +427,102 @@ export default function WorkoutScreen({ workout, availableEquipment, allLogs, ex
             />
             <button style={{ ...s.saveBtn, background: '#e8ff00' }} onClick={saveExNote}>Save Note</button>
             <button style={s.cancelBtn} onClick={() => setShowExNote(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {/* Plate Calculator Modal */}
+      {showPlateCalc && (
+        <div style={s.modal}>
+          <div style={{ ...s.modalCard, maxHeight: '85vh', overflowY: 'auto' }}>
+            <div style={s.modalTitle}>PLATE CALCULATOR</div>
+            <div style={s.modalSub}>{activeEx?.name}</div>
+
+            <div style={s.modalLabel}>Target total weight</div>
+            <input
+              style={s.plateInput}
+              type="number"
+              inputMode="decimal"
+              placeholder="e.g. 225"
+              value={plateTarget}
+              onChange={e => setPlateTarget(e.target.value)}
+              autoFocus
+            />
+
+            <div style={s.modalLabel}>Bar weight</div>
+            <input
+              style={s.plateInput}
+              type="number"
+              inputMode="decimal"
+              placeholder="e.g. 45"
+              value={barWeight}
+              onChange={e => setBarWeight(e.target.value)}
+            />
+
+            <div style={s.modalLabel}>Available plates</div>
+            <div style={s.plateToggleGrid}>
+              {[45, 35, 25, 15, 10, 5, 2.5].map(plate => {
+                const selected = availablePlates.includes(plate)
+                return (
+                  <button
+                    key={plate}
+                    style={{ ...s.plateToggle, ...(selected ? s.plateToggleActive : {}) }}
+                    onClick={() => togglePlate(plate)}
+                  >
+                    {plate}
+                  </button>
+                )
+              })}
+            </div>
+
+            {(() => {
+              const calc = calculatePlates(plateTarget, barWeight, availablePlates)
+
+              if (calc.error) {
+                return <div style={s.plateError}>{calc.error}</div>
+              }
+
+              return (
+                <div style={s.plateResult}>
+                  <div style={s.plateResultTop}>
+                    <span>Total</span>
+                    <strong>{calc.target} lbs</strong>
+                  </div>
+                  <div style={s.plateResultTop}>
+                    <span>Bar</span>
+                    <strong>{calc.bar} lbs</strong>
+                  </div>
+                  <div style={s.plateResultTop}>
+                    <span>Load per side</span>
+                    <strong>{calc.perSide} lbs</strong>
+                  </div>
+
+                  <div style={s.plateDivider} />
+
+                  {calc.plates.length > 0 ? (
+                    calc.plates.map(item => (
+                      <div key={item.plate} style={s.plateRow}>
+                        <span>{item.plate} lb plate</span>
+                        <strong>× {item.count} per side</strong>
+                      </div>
+                    ))
+                  ) : (
+                    <div style={s.plateEmpty}>No plates needed.</div>
+                  )}
+
+                  {calc.remaining > 0 && (
+                    <div style={s.plateWarning}>
+                      Remaining {calc.remaining} lbs per side. You may need smaller plates or a different target weight.
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
+
+            <button style={{ ...s.saveBtn, background: '#e8ff00' }} onClick={() => setShowPlateCalc(false)}>
+              DONE
+            </button>
+            <button style={s.cancelBtn} onClick={() => setShowPlateCalc(false)}>Close</button>
           </div>
         </div>
       )}
@@ -463,5 +621,17 @@ const s = {
   noteInput: { width: '100%', background: '#0a0a0a', border: '1px solid #1a1a1a', borderRadius: 10, padding: '12px', color: '#f0ede8', fontFamily: "'DM Sans', sans-serif", fontSize: 13, resize: 'none', outline: 'none', boxSizing: 'border-box', marginBottom: 16 },
   saveBtn: { width: '100%', border: 'none', borderRadius: 12, padding: '16px', fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, letterSpacing: 4, color: '#0a0a0a', cursor: 'pointer', marginBottom: 10 },
   cancelBtn: { width: '100%', background: 'transparent', border: 'none', color: '#444', cursor: 'pointer', fontFamily: "'DM Mono', monospace", fontSize: 13, padding: '8px' },
+  plateCalcBtn: { width: '100%', background: '#0a0a0a', border: '1px solid #222', borderRadius: 10, padding: '12px', color: '#e8ff00', cursor: 'pointer', fontFamily: "'DM Mono', monospace", fontSize: 12, letterSpacing: 1, marginBottom: 16 },
+  plateInput: { width: '100%', background: '#0a0a0a', border: '1px solid #1a1a1a', borderRadius: 10, padding: '14px 12px', color: '#f0ede8', fontFamily: "'DM Mono', monospace", fontSize: 18, outline: 'none', boxSizing: 'border-box', marginBottom: 16 },
+  plateToggleGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 16 },
+  plateToggle: { background: '#0a0a0a', border: '1px solid #1a1a1a', borderRadius: 10, padding: '10px 8px', color: '#555', cursor: 'pointer', fontFamily: "'DM Mono', monospace", fontSize: 12 },
+  plateToggleActive: { background: '#141400', borderColor: '#e8ff00', color: '#e8ff00' },
+  plateResult: { background: '#0a0a0a', border: '1px solid #1a1a1a', borderRadius: 12, padding: 14, marginBottom: 18 },
+  plateResultTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#777', marginBottom: 8 },
+  plateDivider: { height: 1, background: '#1a1a1a', margin: '12px 0' },
+  plateRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: '1px solid #141414', fontFamily: "'DM Mono', monospace", fontSize: 13, color: '#f0ede8' },
+  plateError: { background: '#1a0f00', border: '1px solid #92400e', color: '#d97706', borderRadius: 10, padding: 12, fontSize: 12, marginBottom: 18 },
+  plateWarning: { marginTop: 12, fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#facc15', lineHeight: 1.5 },
+  plateEmpty: { fontFamily: "'DM Mono', monospace", fontSize: 12, color: '#555', padding: '8px 0' },
   addExBtn: { width: '100%', background: 'transparent', border: '1px solid #222', borderRadius: 10, padding: '12px', color: '#555', cursor: 'pointer', fontFamily: "'DM Mono', monospace", fontSize: 12, letterSpacing: 1 },
 }
