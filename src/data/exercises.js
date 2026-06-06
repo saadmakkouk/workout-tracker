@@ -624,6 +624,17 @@ export const EXERCISES = {
     notes: 'Weighted ab work. Kneeling, crunch with abs not hip flexors. Hold contraction at bottom.',
   },
 
+  russian_twist: {
+    id: 'russian_twist', name: 'Russian Twist',
+    muscle: 'core', pattern: 'core', tier: 3,
+    equipment: [],
+    sets_default: 3, rep_range_strength: '16-24', rep_range_accumulation: '20-30',
+    rir_target_strength: 2, rir_target_accumulation: 2,
+    rest_strength: 60, rest_accumulation: 45, is_primary: false,
+    quality_score: 7,
+    notes: 'Rotational core exercise. Keep chest tall, ribs down, and rotate through the torso rather than just moving the arms. Can be bodyweight or loaded with a plate/dumbbell. Count total reps, or use half the listed range per side.',
+  },
+
   // ─── ATHLETIC / POWER ────────────────────────────────────────────
   box_jump: {
     id: 'box_jump', name: 'Box Jump',
