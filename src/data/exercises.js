@@ -193,6 +193,16 @@ export const EXERCISES = {
     quality_score: 7,
     notes: 'Volume day horizontal pull. Constant tension. Drive elbows behind torso, squeeze mid back.',
   },
+  dumbbell_row: {
+    id: 'dumbbell_row', name: 'Dumbbell Row',
+    muscle: 'back', pattern: 'horizontal_pull', tier: 2,
+    equipment: ['dumbbells'],
+    sets_default: 3, rep_range_strength: '8-10', rep_range_accumulation: '10-12',
+    rir_target_strength: 2, rir_target_accumulation: 2,
+    rest_strength: 90, rest_accumulation: 75, is_primary: false,
+    quality_score: 9,
+    notes: 'Unilateral dumbbell row from a tripod stance. Feet staggered, torso hinged and stable, one hand braced on the thigh/rack/bench if needed. Let the shoulder blade protract slightly for a full lat/upper-back stretch at the bottom, then row toward the hip and add a slight torso twist/opening at the top for a stronger contraction. Control the eccentric. Per arm.',
+  },
   chest_supported_row: {
     id: 'chest_supported_row', name: 'Chest Supported Row',
     muscle: 'back', pattern: 'horizontal_pull', tier: 2,
